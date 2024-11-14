@@ -1,0 +1,57 @@
+@startuml
+
+class Admin {
+  +inserirCliente()
+  +inserirVendedor()
+  +inserirVeiculo()
+  +realizarVenda()
+  +realizarLocacao()
+}
+
+class Vendedor {
+  +inserirCliente()
+  +inserirVeiculo()
+  +realizarVenda()
+  +realizarLocacao()
+}
+
+class Cliente {
+  +comprarVeiculo()
+  +alugarVeiculo()
+  +agendarVisita()
+  +visualizarVeiculosDisponiveis()
+}
+
+class Venda {
+  -data: Date
+  -valor: float
+  +realizarVenda()
+}
+class Veiculo {
+  -marca: String
+  -modelo: String
+  -ano: int
+  -preco: float
+  -disponivel: bool
+}
+
+
+class Locacao {
+  -dataInicio: Date
+  -dataFim: Date
+  -valorDiaria: float
+  +realizarLocacao()
+}
+
+Admin <|-- Vendedor
+Admin --> Vendedor : "Gerenciar"
+Admin --> Veiculo : "Gerenciar"
+Vendedor --> Cliente : "Gerenciar"
+Vendedor --> Veiculo : "Gerenciar"
+Cliente --> Venda : "Realizar"
+Cliente --> Veiculo : "Consultar"
+Cliente --> Locacao : "Realizar"
+Veiculo --> Venda : "Vendido em"
+Veiculo --> Locacao : "Locado em"
+
+@enduml
