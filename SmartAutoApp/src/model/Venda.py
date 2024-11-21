@@ -2,9 +2,9 @@
 from pydantic import BaseModel
 import uuid
 from datetime import date
-from src.model.Vendedor import Vendedor
-from src.model.Cliente import Cliente
-from src.model.Veiculo import Veiculo
+from model.Vendedor import Vendedor
+from model.Cliente import Cliente
+from model.Veiculo import Veiculo
 
 
 class Venda(BaseModel):

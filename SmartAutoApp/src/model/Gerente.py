@@ -1,5 +1,5 @@
 import uuid
-import Vendedor
+from model.Vendedor import Vendedor
 
 
 class Gerente(Vendedor):
