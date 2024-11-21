@@ -90,8 +90,8 @@ class Veiculo {
 
 
 
-Vendedor --|> Gerente
-Gerente --|> Admin 
+Vendedor <|-- Gerente
+Gerente <|-- Admin 
 Venda *-- Veiculo : "é vendido"
 Venda o-- Cliente : "faz"
 Venda o-- Vendedor : "realiza"
@@ -101,5 +101,5 @@ Locacao o-- Cliente : "faz"
 Locacao o-- Vendedor : "realiza"
 
 Cliente "1"*-- "1"Endereco : "tem"
-' Vendedor "1"*-- "1" Endereco : "tem"
+
 @enduml
