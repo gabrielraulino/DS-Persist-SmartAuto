@@ -1,7 +1,7 @@
 # Autor: Gabriel Raulino
 
 import uuid
-import Gerente
+from model.Gerente import Gerente
 
 
 class Admin(Gerente):

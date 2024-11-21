@@ -4,43 +4,50 @@ import uuid
 
 # from datetime import date
 from pydantic import BaseModel
-from src.model.Veiculo import Veiculo
-from src.model.Venda import Venda
-from src.model.Locacao import Locacao
-from src.model.Cliente import Cliente
+
+# from model.Veiculo import Veiculo
+# from model.Venda import Venda
+# from model.Locacao import Locacao
+# from model.Cliente import Cliente
 
 # from typing import List
 
 
 class Vendedor(BaseModel):
-    def __init__(
-        self,
-        id: uuid.UUID,
-        usuario: str,
-        senha: str,
-        nome: str,
-        telefone: str,
-    ):
-        self._id = id
-        self._usuario = usuario
-        self._senha = senha
-        self._nome = nome
-        self._telefone = telefone
+    # def __init__(
+    #     self,
+    #     id: uuid.UUID,
+    #     usuario: str,
+    #     senha: str,
+    #     nome: str,
+    #     telefone: str,
+    # ):
+    #     self._id = id
+    #     self._usuario = usuario
+    #     self._senha = senha
+    #     self._nome = nome
+    #     self._telefone = telefone
 
-    def inserir_veiculo(self, veiculo: Veiculo) -> None:
-        # Lógica para inserir um veículo
-        pass
+    id: uuid.UUID
+    usuario: str
+    senha: str
+    nome: str
+    telefone: str
 
-    def realizar_venda(self, venda: Venda) -> None:
-        # Lógica para realizar uma venda
-        pass
+    # def inserir_veiculo(self, veiculo: Veiculo) -> None:
+    #     # Lógica para inserir um veículo
+    #     pass
 
-    def realizar_locacao(self, locacao: Locacao) -> None:
-        # Lógica para realizar uma locação
-        pass
+    # def realizar_venda(self, venda: Venda) -> None:
+    #     # Lógica para realizar uma venda
+    #     pass
 
-    def inserir_cliente(self, cliente: Cliente) -> None:
-        pass
+    # def realizar_locacao(self, locacao: Locacao) -> None:
+    #     # Lógica para realizar uma locação
+    #     pass
+
+    # def inserir_cliente(self, cliente: Cliente) -> None:
+    #     pass
 
 
 # Exemplo de uso da classe

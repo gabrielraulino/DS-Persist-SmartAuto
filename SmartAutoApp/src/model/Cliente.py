@@ -1,7 +1,7 @@
 # Autor: Gabriel Raulino
 import uuid
 from pydantic import BaseModel
-from src.model.Endereco import Endereco
+from model.Endereco import Endereco
 
 
 class Cliente(BaseModel):
