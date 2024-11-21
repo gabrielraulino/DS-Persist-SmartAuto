@@ -1,7 +1,10 @@
 import uuid
 
+
 class Endereco:
-    def __init__(self, id: uuid.UUID, uf: str, cidade: str, logradouro: str, numero: str):
+    def __init__(
+        self, id: uuid.UUID, uf: str, cidade: str, logradouro: str, numero: str
+    ) -> None:
         self._id = id
         self._uf = uf
         self._cidade = cidade
