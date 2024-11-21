@@ -15,5 +15,6 @@ class Venda(BaseModel):
         valor: float,
         vendedor: Vendedor,
         cliente: Cliente,
+        veiculo: Veiculo,
     ):
         self._id

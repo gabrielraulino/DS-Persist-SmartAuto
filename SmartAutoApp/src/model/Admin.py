@@ -2,24 +2,15 @@
 
 import uuid
 import Gerente
-from src.model.Endereco import Endereco
 
 
 class Admin(Gerente):
-
     def __init__(
-        self, 
-        id: uuid.UUID, 
-        usuario: str, 
-        senha: str, nome: 
-        str, 
-        endereco: Endereco
+        self,
+        id: uuid.UUID,
+        usuario: str,
+        senha: str,
+        nome: str,
+        telefone: str,
     ):
-        super().__init__(
-          id, 
-          usuario, 
-          senha, 
-          nome, 
-          endereco
-        )
-
+        super().__init__(id, usuario, senha, nome, telefone)

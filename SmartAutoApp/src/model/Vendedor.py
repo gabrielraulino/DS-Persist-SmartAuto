@@ -4,7 +4,6 @@ import uuid
 
 # from datetime import date
 from pydantic import BaseModel
-from src.model.Endereco import Endereco
 from src.model.Veiculo import Veiculo
 from src.model.Venda import Venda
 from src.model.Locacao import Locacao
@@ -21,14 +20,12 @@ class Vendedor(BaseModel):
         senha: str,
         nome: str,
         telefone: str,
-        endereco: Endereco,
     ):
         self._id = id
         self._usuario = usuario
         self._senha = senha
         self._nome = nome
         self._telefone = telefone
-        self._endereco = endereco
 
     def inserir_veiculo(self, veiculo: Veiculo) -> None:
         # Lógica para inserir um veículo
