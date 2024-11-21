@@ -1,57 +1,105 @@
-@startuml
-
-class Admin {
-  +inserirCliente()
-  +inserirVendedor()
-  +inserirVeiculo()
-  +realizarVenda()
-  +realizarLocacao()
-}
+@startuml SmartAuto
+skinparam defaultFontName Hasklig
+skinparam dpi 150
 
 class Vendedor {
-  +inserirCliente()
-  +inserirVeiculo()
-  +realizarVenda()
-  +realizarLocacao()
+  -_id: uuid
+  -_usuario: str
+  -_senha: str
+  -_nome: str
+  -_telefone: str
+  -_endereco: Endereco
+
+  +Vendedor(id: uuid, usuario: str, senha: str, nome: str, telefone: str, endereco: Endereco)
+  +inserir_vendedor(vendedor: Vendedor)
+  +inserir_veiculo(veiculo: Veiculo)
+  +realizar_venda()
+  +realizar_locacao()
+}
+
+
+class Gerente {
+  +Gerente(id: uuid, usuario: str, senha: str, nome: str, telefone: str, endereco: Endereco)
+  +inserir_vendedor()
+  +remover_veiculo(veiculo: Veiculo): bool
+  +remover_cliente(cliente: Cliente): bool
+}
+
+class Admin {
+  +Admin(id: uuid, usuario: str, senha: str, nome: str, telefone: str, endereco: Endereco)
+  +remover_gerente(gerente: Gerente): bool
+  +remover_admin(admin: Admin): bool
+  +remover_venda(venda: Venda): bool
+  +remover_locacao(locacao: Locacao): bool
 }
 
 class Cliente {
-  +comprarVeiculo()
-  +alugarVeiculo()
-  +agendarVisita()
-  +visualizarVeiculosDisponiveis()
+  -_id: uuid
+  -_nome: str
+  -_telefone: str
+  -_email: str
+  -_endereco: Endereco
+  
+  +Cliente(id: uuid, nome: str, telefone: str, email: str, endereco: Endereco)
+  
 }
 
+class Endereco{
+  -_id: uuid
+  -_uf: str
+  -_cidade: str
+  -_logradouro: str
+  -_numero: str
+  +Endereco(id:uuid, uf: str, cidade: str, logradouro:str, numero: str)
+}
 class Venda {
-  -data: Date
-  -valor: float
-  +realizarVenda()
-}
-class Veiculo {
-  -marca: String
-  -modelo: String
-  -ano: int
-  -preco: float
-  -disponivel: bool
-}
+  -_id:uuid
+  -_data: date
+  -_valor: float
+  -_locador: Cliente
+  -_veiculo: Veiculo
+  -_cliente: Cliente
 
+  +Venda(data: date, valor: float, cliente: Cliente, vendedor: Vendedor)
+}
 
 class Locacao {
-  -dataInicio: Date
-  -dataFim: Date
-  -valorDiaria: float
-  +realizarLocacao()
+  -_id:uuid
+  -_data_inicio: date
+  -_data_fim: date
+  -_valor_diaria: float
+  -_locador: Cliente
+  -_veiculo: Veiculo
+  -_cliente: Cliente
+
+  +Locacao(data: date, valor: float, cliente: Cliente, vendedor: Vendedor)
+}
+class Veiculo {
+  -_id:uuid
+  -_marca: str
+  -_modelo: str
+  -_ano: int
+  -_preco: float
+  -_valor_diaria: float
+  -_disponivel: bool
+  -_cor:str
+  +Veiculo(id: uuid, marca: str, modelo: str, ano: int, preco: float, valor_diaria, cor: str)
+  +get_disponivel(): bool
 }
 
-Admin <|-- Vendedor
-Admin --> Vendedor : "Gerenciar"
-Admin --> Veiculo : "Gerenciar"
-Vendedor --> Cliente : "Gerenciar"
-Vendedor --> Veiculo : "Gerenciar"
-Cliente --> Venda : "Realizar"
-Cliente --> Veiculo : "Consultar"
-Cliente --> Locacao : "Realizar"
-Veiculo --> Venda : "Vendido em"
-Veiculo --> Locacao : "Locado em"
 
+
+
+Vendedor <|-- Gerente
+Gerente <|-- Admin 
+Venda *-- Veiculo : "é vendido"
+Venda o-- Cliente : "faz"
+Venda o-- Vendedor : "realiza"
+
+Locacao *-- Veiculo : "é locado"
+Locacao o-- Cliente : "faz"
+Locacao o-- Vendedor : "realiza"
+
+Cliente "1"*-- "1"Endereco : "tem"
+Vendedor "1"*-- "1" Endereco : "tem"
 @enduml
