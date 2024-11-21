@@ -1,15 +1,15 @@
 Gabriel Raulino {
-Criar classe Vendedor e seus métodos REST
-Criar classe cliente e seus métodos REST
-Criar classe Admin e seus métodos REST
-Criar classe venda e seus métodos REST
+Criar classe Vendedor e seus métodos REST e serialização 
+Criar classe cliente e seus métodos REST e serialização 
+Criar classe Admin e seus métodos REST e serialização 
+Criar classe venda e seus métodos REST e serialização 
 }
 
 Antonio Kleberson {
-Criar classe Gerente e seus métodos REST
-Criar classe Endereco e seus métodos REST
-Criar classe Locacao e seus métodos REST
-Criar classe Veiculo e seus métodos REST
+Criar classe Gerente e seus métodos REST e serialização 
+Criar classe Endereco e seus métodos REST e serialização 
+Criar classe Locacao e seus métodos REST e serialização 
+Criar classe Veiculo e seus métodos REST e serialização 
 }
 
 
