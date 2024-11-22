@@ -2,37 +2,32 @@
 skinparam defaultFontName Hasklig
 skinparam dpi 150
 
-class Vendedor {
+enum Role {
+  VENDEDOR
+  GERENTE
+  ADMIN
+}
+
+class Funcionario {
   -_id: uuid
   -_usuario: str
   -_senha: str
   -_nome: str
   -_telefone: str
-  -_endereco: Endereco
+  -_role: Role
 
-  +Vendedor(id: uuid, usuario: str, senha: str, nome: str, telefone: str, endereco: Endereco)
-  +inserir_vendedor(vendedor: Vendedor)
-  +inserir_veiculo(veiculo: Veiculo)
+  +Funcionario(id: uuid, usuario: str, senha: str, nome: str, telefone: str, role: Role)
   +realizar_venda()
   +realizar_locacao()
-}
-
-
-class Gerente {
-  +Gerente(id: uuid, usuario: str, senha: str, nome: str, telefone: str, endereco: Endereco)
   +inserir_vendedor()
   +remover_veiculo(veiculo: Veiculo): bool
   +remover_cliente(cliente: Cliente): bool
-}
-
-class Admin {
-  +Admin(id: uuid, usuario: str, senha: str, nome: str, telefone: str, endereco: Endereco)
-  +remover_gerente(gerente: Gerente): bool
-  +remover_admin(admin: Admin): bool
+  +remover_gerente(gerente: Funcionario): bool
+  +remover_admin(admin: Funcionario): bool
   +remover_venda(venda: Venda): bool
   +remover_locacao(locacao: Locacao): bool
 }
-
+Funcionario --> Role : "é um"
 class Cliente {
   -_id: uuid
   -_nome: str
@@ -41,7 +36,6 @@ class Cliente {
   -_endereco: Endereco
   
   +Cliente(id: uuid, nome: str, telefone: str, email: str, endereco: Endereco)
-  
 }
 
 class Endereco{
@@ -52,6 +46,7 @@ class Endereco{
   -_numero: str
   +Endereco(id:uuid, uf: str, cidade: str, logradouro:str, numero: str)
 }
+
 class Venda {
   -_id:uuid
   -_data: date
@@ -60,7 +55,7 @@ class Venda {
   -_veiculo: Veiculo
   -_cliente: Cliente
 
-  +Venda(data: date, valor: float, cliente: Cliente, vendedor: Vendedor)
+  +Venda(data: date, valor: float, cliente: Cliente, vendedor: Funcionario)
 }
 
 class Locacao {
@@ -72,8 +67,9 @@ class Locacao {
   -_veiculo: Veiculo
   -_cliente: Cliente
 
-  +Locacao(data: date, valor: float, cliente: Cliente, vendedor: Vendedor)
+  +Locacao(data: date, valor: float, cliente: Cliente, vendedor: Funcionario)
 }
+
 class Veiculo {
   -_id:uuid
   -_marca: str
@@ -87,18 +83,13 @@ class Veiculo {
   +get_disponivel(): bool
 }
 
-
-
-
-Vendedor <|-- Gerente
-Gerente <|-- Admin 
 Venda *-- Veiculo : "é vendido"
 Venda o-- Cliente : "faz"
-Venda o-- Vendedor : "realiza"
+Venda o-- Funcionario : "realiza"
 
 Locacao *-- Veiculo : "é locado"
 Locacao o-- Cliente : "faz"
-Locacao o-- Vendedor : "realiza"
+Locacao o-- Funcionario : "realiza"
 
 Cliente "1"*-- "1"Endereco : "tem"
 

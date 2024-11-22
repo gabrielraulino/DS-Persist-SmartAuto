@@ -7,13 +7,11 @@ import uuid
 
 from model.Cliente import Cliente
 
-from model.Cliente import Cliente
-
-from model.Vendedor import Vendedor
+from model.Funcionario import Funcionario
 from model.Endereco import Endereco
 
 
-vendedores: List[Vendedor] = [
+vendedores: List[Funcionario] = [
     {
         "id": 1,
         "usuario": "beulah_g",
@@ -35,12 +33,20 @@ vendedores: List[Vendedor] = [
 ]
 
 
+endereco = Endereco(
+    id=uuid.uuid4(),
+    uf="CE",
+    cidade="Fortaleza",
+    logradouro="Rua das Flores",
+    numero="123",
+)
 clientes: List[Cliente] = [
     {
         "id": uuid.uuid1(),
         "nome": "joao",
         "telefone": "998876654",
         "email": "example@domain.com",
+        "endereco": endereco,
     }
 ]
 
