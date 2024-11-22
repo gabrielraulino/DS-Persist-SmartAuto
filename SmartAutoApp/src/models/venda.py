@@ -2,7 +2,7 @@
 from pydantic import BaseModel
 import uuid
 from datetime import date
-from models.Funcionario import Funcionario
+from SmartAutoApp.src.models.funcionario import Funcionario
 from models.cliente import Cliente
 from models.veiculo import Veiculo
 
