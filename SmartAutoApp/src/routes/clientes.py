@@ -31,4 +31,12 @@ def insere_cliente(cliente: Cliente):
     return cliente
 
 
+@clientes_router.get("/clientes/{cliente_id}")
+def buscar_cliente(cliente_id: uuid.UUID):
+    for indice, cliente_atual in enumerate(clientes):
+        if cliente_atual.id == cliente_id:
+            return cliente_atual
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item não encontrado.")
+
+
 # Persistência dos clientes utilizando armazenamento em CSV
