@@ -15,17 +15,19 @@ class Funcionario {
   -_nome: str
   -_telefone: str
   -_role: Role
-
+  __
   +Funcionario(id: uuid, usuario: str, senha: str, nome: str, telefone: str, role: Role)
   +realizar_venda()
   +realizar_locacao()
-  +inserir_vendedor()
   +remover_veiculo(veiculo: Veiculo): bool
+  __
+  +inserir_vendedor()
   +remover_cliente(cliente: Cliente): bool
+  __
   +remover_gerente(gerente: Funcionario): bool
-  +remover_admin(admin: Funcionario): bool
   +remover_venda(venda: Venda): bool
   +remover_locacao(locacao: Locacao): bool
+  +remover_admin(admin: Funcionario): bool
 }
 Funcionario --> Role : "é um"
 class Cliente {
