@@ -17,17 +17,29 @@ class Funcionario {
   -_role: Role
   __
   +Funcionario(id: uuid, usuario: str, senha: str, nome: str, telefone: str, role: Role)
-  +realizar_venda()
-  +realizar_locacao()
+  +realizar_venda(cliente: Cliente, vendedor: Vendedor, veiculo: Veiculo):bool
+  +realizar_locacao(cliente: Cliente, vendedor: Vendedor, veiculo: Veiculo, dt_ini: Date, dt_fim: Date): bool
+  +inserir_cliente(cliente: Cliente): bool
+  +alterar_informacoes(funcionario: Funcionario): bool
+  __
+  +inserir_veiculo(veiculo: Veiculo): bool
   +remover_veiculo(veiculo: Veiculo): bool
-  __
-  +inserir_vendedor()
+  +alterar_veiculo(veiculo: Veiculo): bool
+  +inserir_vendedor(vendedor: Funcionario): bool
+  +remover_vendedor(vendedor: Funcionario):bool
+  +alterar_vendedor(vendedor: Funcionario):bool
   +remover_cliente(cliente: Cliente): bool
+  +alterar_cliente(cliente: Cliente): bool
   __
+  +inserir_gerente(gerente: Funcionario)
   +remover_gerente(gerente: Funcionario): bool
+  +alterar_gerente(gerente: Funcionario)
   +remover_venda(venda: Venda): bool
+  +alterar_venda(venda: Venda): bool
   +remover_locacao(locacao: Locacao): bool
+  +alterar_locacao(locacao: Locacao): bool
   +remover_admin(admin: Funcionario): bool
+  +alterar_admin(admin: Funcionario): bool
 }
 Funcionario --> Role : "é um"
 class Cliente {
