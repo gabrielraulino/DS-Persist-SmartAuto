@@ -1,8 +1,8 @@
 import uuid
 
 # from src.model.Vendedor import Vendedor
-from src.model.Endereco import Endereco
-from src.model.Cliente import Cliente
+from src.models.endereco import Endereco
+from src.models.cliente import Cliente
 
 
 def main():
