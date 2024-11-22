@@ -1,6 +1,7 @@
 # Autor: Gabriel Raulino
 
 from enum import Enum
+from typing import Union
 import uuid
 
 from pydantic import BaseModel
@@ -13,7 +14,7 @@ class Role(str, Enum):
 
 
 class Funcionario(BaseModel):
-    id: int
+    id: Union[uuid.UUID, None] = None
     usuario: str
     senha: str
     nome: str
