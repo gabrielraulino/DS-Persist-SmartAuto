@@ -1,9 +1,10 @@
+from typing import Union
 import uuid
 from pydantic import BaseModel
 
 
 class Endereco(BaseModel):
-    id: uuid.UUID
+    id: Union[uuid.UUID, None] = None
     uf: str
     cidade: str
     logradouro: str
