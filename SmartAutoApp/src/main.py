@@ -15,28 +15,11 @@ import uuid
 
 
 app = FastAPI()
-# endereco = Endereco(
-#     id=uuid.uuid4(),
-#     uf="CE",
-#     cidade="Fortaleza",
-#     logradouro="Rua das Flores",
-#     numero="123",
-# )
-
-# clientes: List[dict] = [
-#     {
-#         "id": uuid.uuid1(),
-#         "nome": "joao",
-#         "telefone": "998876654",
-#         "email": "example@domain.com",
-#         "endereco": endereco,
-#     }
-# ]
 
 
 @app.get("/")
 def read_root():
-    return {"msg": "Hello World"}
+    return {"msg": "SmartAutoApp"}
 
 
 app.include_router(funcionarios_router)
