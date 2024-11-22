@@ -3,9 +3,4 @@ import uuid
 
 
 class Veiculo(BaseModel):
-    def __init__(
-        self,
-        marca: str,
-        modelo: str,
-    ):
-        self
+    id: uuid.UUID
