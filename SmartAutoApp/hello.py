@@ -3,6 +3,9 @@ import uuid
 # from src.model.Vendedor import Vendedor
 from src.models.endereco import Endereco
 from src.models.cliente import Cliente
+import pandas as pd
+
+cliente_csv = "./src/storage/clientes.csv"
 
 
 def main():
@@ -12,8 +15,11 @@ def main():
 if __name__ == "__main__":
     main()
 
-# vendedor = Vendedor(id=12312456, usuario="vendedor123", senha="senha_segura", nome="João Silva")
-# print(vendedor._id)
+try:
+    df = pd.read_csv(cliente_csv)
+except Exception as e:
+    df = pd.DataFrame()
+
 endereco = Endereco(
     id=uuid.uuid4(),
     uf="CE",
@@ -21,7 +27,6 @@ endereco = Endereco(
     logradouro="Rua das Flores",
     numero="123",
 )
-# admin = Vendedor(id=uuid.uuid4(), usuario="admin123", senha="senha_admin", nome="Admin User")
 
 # print(admin)
 cliente = Cliente(
@@ -31,5 +36,7 @@ cliente = Cliente(
     telefone="123456789",
     endereco=endereco,
 )
+
+
 print(endereco)
 print(cliente)
