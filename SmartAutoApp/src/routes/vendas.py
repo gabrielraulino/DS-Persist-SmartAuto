@@ -25,6 +25,8 @@ def listar_vendas():
 
 @vendas_router.post("/vendas/", response_model=Venda, status_code=HTTPStatus.CREATED)
 def criar_venda(venda: Venda):
+    if venda.data is None:
+        venda.data = date.today()
     if venda.id is None:
         venda.id = uuid.uuid4()
     elif any(v.id == venda.id for v in vendas):
