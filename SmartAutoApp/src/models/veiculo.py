@@ -1,9 +1,10 @@
+from typing import Union
 from pydantic import BaseModel
 import uuid
 
 
 class Veiculo(BaseModel):
-    id: uuid.UUID
+    id: Union[uuid.UUID, None] = None
     marca: str
     modelo: str
     ano: int

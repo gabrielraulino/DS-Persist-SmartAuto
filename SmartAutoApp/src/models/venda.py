@@ -1,11 +1,12 @@
 # Autor: Gabriel Raulino
+from typing import Union
 from pydantic import BaseModel
 import uuid
 from datetime import date
 
 
 class Venda(BaseModel):
-    id: uuid.UUID
+    id: Union[uuid.UUID, None] = None
     data: date
     valor: float
     vendedor: uuid.UUID
