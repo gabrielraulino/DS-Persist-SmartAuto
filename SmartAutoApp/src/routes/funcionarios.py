@@ -3,13 +3,13 @@ from fastapi import APIRouter, HTTPException
 import uuid
 from typing import List
 from models.funcionario import Funcionario, Role
-from storage.file_handler import read_csv, append_csv, write_csv
+from utils.file_handler import read_csv, append_csv, write_csv
 
 funcionarios_router = APIRouter()
 file = "src/storage/funcionarios.csv"
 campos = ["id", "usuario", "senha", "nome", "telefone", "funcao"]
 
-funcionarios_data = read_csv(file)
+funcionarios_data = read_csv(file)  # funcionarios_data recebe um dict
 funcionarios: List[Funcionario] = [Funcionario(**f) for f in funcionarios_data]
 
 
