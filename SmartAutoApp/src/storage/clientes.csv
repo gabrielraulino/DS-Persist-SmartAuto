@@ -1,0 +1,3 @@
+id,nome,telefone,email,endereco
+33293c3f-e40c-4b63-b233-4c292bb6d614,Ana Oliveira,(11) 99876-5432,ana.oliveira@gmail.com,"{'id': UUID('01089053-adae-45c1-b10b-d8c10b405987'), 'uf': 'SP', 'cidade': 'São Paulo', 'logradouro': 'Rua das Acácias', 'numero': '123'}"
+e550708d-6b70-4668-8642-9a80e7904db3,Mariana Costa,(31) 91234-5678,mariana.costa@example.com,"{'id': UUID('ca3aeaff-ba2a-4136-baa8-b3bcfab18577'), 'uf': 'MG', 'cidade': 'Belo Horizonte', 'logradouro': 'Rua da Paz', 'numero': '789'}"
