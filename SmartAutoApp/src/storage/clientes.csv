@@ -1,3 +1,10 @@
 id,nome,telefone,email,endereco
 33293c3f-e40c-4b63-b233-4c292bb6d614,Ana Oliveira,(11) 99876-5432,ana.oliveira@gmail.com,"{'id': UUID('01089053-adae-45c1-b10b-d8c10b405987'), 'uf': 'SP', 'cidade': 'São Paulo', 'logradouro': 'Rua das Acácias', 'numero': '123'}"
 e550708d-6b70-4668-8642-9a80e7904db3,Mariana Costa,(31) 91234-5678,mariana.costa@example.com,"{'id': UUID('ca3aeaff-ba2a-4136-baa8-b3bcfab18577'), 'uf': 'MG', 'cidade': 'Belo Horizonte', 'logradouro': 'Rua da Paz', 'numero': '789'}"
+ce2a737b-f461-493f-a90c-4e032165e305,Carlos Souza,(21) 98765-4321,carlos.souza@example.com,"{'id': UUID('d30129fe-c1b6-4707-81e0-23a970a8c184'), 'uf': 'RJ', 'cidade': 'Rio de Janeiro', 'logradouro': 'Avenida Atlântica', 'numero': '456'}"
+fcfc4225-c6c4-482f-a3df-fe32fb879e2f,Rafael Lima,(41) 99812-3456,rafael.lima@example.com,"{'id': UUID('4118e744-58f8-43d9-9ae4-51b9ee4f0fa0'), 'uf': 'PR', 'cidade': 'Curitiba', 'logradouro': 'Rua das Flores', 'numero': '101'}"
+452296bc-5874-4f58-b2bb-00493163e4cd,Fernanda Almeida,(51) 91234-5678,fernanda.almeida@example.com,"{'id': UUID('4b03bfa9-ab73-4554-8f59-8e7d7cfa5923'), 'uf': 'RS', 'cidade': 'Porto Alegre', 'logradouro': 'Rua Independência', 'numero': '202'}"
+511bd9ca-ea6a-40a2-99c6-eec6d73051a3,Pedro Santos,(71) 98765-1234,pedro.santos@example.com,"{'id': UUID('5528e065-67e4-4fd5-bda2-2ec8fa272995'), 'uf': 'BA', 'cidade': 'Salvador', 'logradouro': 'Avenida Sete de Setembro', 'numero': '303'}"
+92c154d5-8f10-4b64-b49e-7a6209c391ad,Julia Mendes,(61) 99876-5432,julia.mendes@example.com,"{'id': UUID('d0f7f45b-8e4f-4909-9b7b-dfdedb4aaae3'), 'uf': 'DF', 'cidade': 'Brasília', 'logradouro': 'Esplanada dos Ministérios', 'numero': '404'}"
+fac2a826-7eb2-4a36-99f0-d7a85b141812,Thiago Moreira,(85) 98765-4321,thiago.moreira@example.com,"{'id': UUID('eabaef6a-1e68-4d6d-90e9-ed1814bf64b4'), 'uf': 'CE', 'cidade': 'Fortaleza', 'logradouro': 'Rua do Sol', 'numero': '505'}"
+692d2f33-9730-4720-b4ff-6ddcbcd33a7a,Ricardo Nascimento,(13) 91234-5678,ricardo.nascimento@example.com,"{'id': UUID('24b2970d-e585-4a1e-865a-32d0ecbc04f3'), 'uf': 'SP', 'cidade': 'Santos', 'logradouro': 'Avenida Ana Costa', 'numero': '707'}"

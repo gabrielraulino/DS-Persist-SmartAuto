@@ -1,0 +1,11 @@
+id,marca,modelo,ano,preco,valor_diaria,disponivel,cor
+c936fff1-6be5-4678-a26d-2c75bb9223e6,Toyota,Corolla,2020,95000.0,250.0,True,Branco
+629bd827-bab8-430c-82aa-76ee7c2f341d,Honda,Civic,2019,98000.0,300.0,False,Preto
+d32509e7-1b2d-417d-8c27-e2ebba99a880,Chevrolet,Onix,2021,75000.0,200.0,True,Prata
+c5cc6528-ce16-42e7-ae48-c0b1ed2f578e,Ford,Ka,2018,55000.0,180.0,True,Vermelho
+b0397341-188f-4ced-9f82-b20b796506f3,Volkswagen,Polo,2022,99000.0,280.0,True,Azul
+bde21c3c-dc55-46d6-80fc-383fd62fd2e8,Renault,Sandero,2020,65000.0,190.0,True,Prata
+95e4a062-3fbb-4d87-81c9-62a54e32bd38,Fiat,Argo,2019,60000.0,170.0,False,Cinza
+1d980bfc-319e-4069-8739-19bf4f5893f5,Hyundai,HB20,2021,74000.0,210.0,True,Branco
+c17557cd-78f8-475f-b63d-2e95cb43bc69,Jeep,Renegade,2022,120000.0,350.0,False,Verde
+14d931e7-df1c-4e33-bdc0-421a889caad7,Nissan,Kicks,2020,115000.0,330.0,True,Preto
