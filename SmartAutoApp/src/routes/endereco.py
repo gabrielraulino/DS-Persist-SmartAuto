@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from http import HTTPStatus
 import uuid
 from typing import List
-from models.endereco import Endereco
+from models.cliente.endereco import Endereco
 from utils.file_handler import read_csv, append_csv, write_csv
 
 enderecos_router = APIRouter()
@@ -18,13 +18,15 @@ def listar_enderecos():
     return enderecos
 
 
-@enderecos_router.post("/enderecos/", response_model=Endereco, status_code=HTTPStatus.CREATED)
+@enderecos_router.post(
+    "/enderecos/", response_model=Endereco, status_code=HTTPStatus.CREATED
+)
 def criar_endereco(endereco: Endereco):
     if endereco.id is None:
         endereco.id = uuid.uuid4()
     elif any(e.id == endereco.id for e in enderecos):
         raise HTTPException(status_code=400, detail="ID já existe.")
-    
+
     enderecos.append(endereco)
     append_csv(file, campos, endereco.dict())
     return endereco
@@ -35,7 +37,9 @@ def buscar_endereco(id: uuid.UUID):
     for e in enderecos:
         if e.id == id:
             return e
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Endereço não encontrado.")
+    raise HTTPException(
+        status_code=HTTPStatus.NOT_FOUND, detail="Endereço não encontrado."
+    )
 
 
 @enderecos_router.put("/enderecos/{id}", response_model=Endereco)
@@ -47,7 +51,9 @@ def atualizar_endereco(id: uuid.UUID, atualizado: Endereco):
             enderecos[index] = atualizado
             write_csv(file, campos, [endereco.dict() for endereco in enderecos])
             return atualizado
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Endereço não encontrado.")
+    raise HTTPException(
+        status_code=HTTPStatus.NOT_FOUND, detail="Endereço não encontrado."
+    )
 
 
 @enderecos_router.delete("/enderecos/{id}")
@@ -57,4 +63,6 @@ def remover_endereco(id: uuid.UUID):
             enderecos.remove(e)
             write_csv(file, campos, [endereco.dict() for endereco in enderecos])
             return {"msg": "Endereço removido com sucesso!"}
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Endereço não encontrado.")
+    raise HTTPException(
+        status_code=HTTPStatus.NOT_FOUND, detail="Endereço não encontrado."
+    )

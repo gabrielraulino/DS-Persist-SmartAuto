@@ -32,7 +32,7 @@ def criar_venda(venda: Venda):
 
     # Adiciona a venda à lista
     vendas.append(venda)
-    append_csv(file, campos, venda.dict())
+    append_csv(file, campos, venda.model_dump())
     return venda
 
 
@@ -53,7 +53,7 @@ def atualizar_venda(id: uuid.UUID, atualizado: Venda):
             if atualizado.id != id:
                 atualizado.id = id
             vendas[index] = atualizado
-            write_csv(file, campos, [venda.dict() for venda in vendas])
+            write_csv(file, campos, [venda.model_dump() for venda in vendas])
             return atualizado
     raise HTTPException(
         status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
@@ -65,7 +65,7 @@ def remover_venda(id: uuid.UUID):
     for v in vendas:
         if v.id == id:
             vendas.remove(v)
-            write_csv(file, campos, [venda.dict() for venda in vendas])
+            write_csv(file, campos, [venda.model_dump() for venda in vendas])
             return {"msg": "Venda removida com sucesso!"}
     raise HTTPException(
         status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
