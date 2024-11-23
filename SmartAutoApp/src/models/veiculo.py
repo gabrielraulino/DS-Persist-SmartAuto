@@ -3,4 +3,4 @@ import uuid
 
 
 class Veiculo(BaseModel):
-  id: uuid.UUID
+    id: uuid.UUID
