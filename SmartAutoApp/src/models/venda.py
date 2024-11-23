@@ -7,7 +7,7 @@ from datetime import date
 
 class Venda(BaseModel):
     id: Union[uuid.UUID, None] = None
-    data: date
+    data: Union[date, None] = None
     valor: float
     vendedor: uuid.UUID
     cliente: uuid.UUID
