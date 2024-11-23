@@ -1,0 +1,72 @@
+[
+  {
+    "usuario": "joao_v",
+    "senha": "senhaSegura123",
+    "nome": "João Vieira",
+    "telefone": "(11) 98765-4321",
+    "funcao": "vendedor"
+  },
+  {
+    "usuario": "maria_g",
+    "senha": "senhaForte456",
+    "nome": "Maria Gonçalves",
+    "telefone": "(21) 91234-5678",
+    "funcao": "gerente"
+  },
+  {
+    "usuario": "carlos_s",
+    "senha": "senha2023!",
+    "nome": "Carlos Santos",
+    "telefone": "(31) 99876-5432",
+    "funcao": "admin"
+  },
+  {
+    "usuario": "ana_l",
+    "senha": "senhaAna123",
+    "nome": "Ana Lima",
+    "telefone": "(41) 98765-4321",
+    "funcao": "vendedor"
+  },
+  {
+    "usuario": "lucas_m",
+    "senha": "senhaLucas789",
+    "nome": "Lucas Martins",
+    "telefone": "(51) 91234-5678",
+    "funcao": "gerente"
+  },
+  {
+    "usuario": "fernanda_r",
+    "senha": "fernandaSenha!",
+    "nome": "Fernanda Ribeiro",
+    "telefone": "(71) 99812-3456",
+    "funcao": "vendedor"
+  },
+  {
+    "usuario": "ricardo_a",
+    "senha": "senhaRicardo@2023",
+    "nome": "Ricardo Alves",
+    "telefone": "(61) 98765-1234",
+    "funcao": "admin"
+  },
+  {
+    "usuario": "beatriz_c",
+    "senha": "senhaBea456",
+    "nome": "Beatriz Costa",
+    "telefone": "(85) 99876-7890",
+    "funcao": "vendedor"
+  },
+  {
+    "usuario": "fabio_t",
+    "senha": "fabioSenha!",
+    "nome": "Fábio Teixeira",
+    "telefone": "(62) 91234-1234",
+    "funcao": "gerente"
+  },
+  {
+    "usuario": "julia_p",
+    "senha": "senhaJulia2023",
+    "nome": "Julia Pereira",
+    "telefone": "(13) 98765-9876",
+    "funcao": "vendedor"
+  }
+]
