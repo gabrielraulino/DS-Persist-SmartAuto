@@ -4,6 +4,7 @@ Autor : Gabriel Raulino
 
 import csv
 from typing import List, Dict
+import pandas as pd
 
 
 # Função para ler dados de um arquivo CSV
@@ -71,3 +72,11 @@ def write_csv(
         writer.writeheader()
         # Escreve todas as linhas fornecidas
         writer.writerows(rows)
+
+
+def count_elements(file_path: str) -> int:
+    try:
+        df = pd.read_csv(file_path)
+        return len(df)
+    except Exception:
+        return 0
