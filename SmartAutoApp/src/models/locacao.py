@@ -5,7 +5,7 @@ from datetime import date
 import uuid
 
 class Locacao(BaseModel):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    id: uuid.UUID 
     data_inicio: date
     data_fim: date
     valor_diaria: float
