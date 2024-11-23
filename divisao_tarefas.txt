@@ -11,7 +11,7 @@ Criar métodos REST entidade Gerente
 Criar classe Endereco e seus métodos REST 
 Criar classe Locacao e seus métodos REST 
 Criar classe Veiculo e seus métodos REST 
-Criar file_compacter que comprime o csv
+Criar zip_handler que comprime o csv
 Criar hash_handler para gerar hash das entidades
 }
 
