@@ -1,3 +1,7 @@
+"""
+Autor : Gabriel Raulino
+"""
+
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
 import uuid
@@ -10,7 +14,9 @@ file = "src/storage/funcionarios.csv"
 campos = ["id", "usuario", "senha", "nome", "telefone", "funcao"]
 
 funcionarios_data = read_csv(file)  # funcionarios_data recebe um dict
-funcionarios: List[Funcionario] = [Funcionario(**f) for f in funcionarios_data]
+funcionarios: List[Funcionario] = [
+    Funcionario(**f) for f in funcionarios_data
+]  # casting de dict para Funcionario
 
 
 @funcionarios_router.get("/funcionarios/")

@@ -1,3 +1,7 @@
+"""
+Autor : Gabriel Raulino
+"""
+
 import csv
 from typing import List, Dict
 
@@ -5,6 +9,8 @@ from typing import List, Dict
 # Função para ler dados de um arquivo CSV
 def read_csv(file_path: str) -> List[Dict[str, str]]:
     """
+    Autor : Gabriel Raulino
+
     Lê os dados de um arquivo CSV e retorna uma lista de dicionários,
     onde cada dicionário representa uma linha do CSV.
 
@@ -26,6 +32,8 @@ def read_csv(file_path: str) -> List[Dict[str, str]]:
 # Função para adicionar uma linha ao arquivo CSV
 def append_csv(file_path: str, fieldnames: List[str], row: Dict[str, str]) -> None:
     """
+    Autor : Gabriel Raulino
+
     Adiciona uma linha ao final de um arquivo CSV. Se o arquivo estiver vazio,
     adiciona também o cabeçalho antes de inserir a linha.
 
@@ -47,6 +55,8 @@ def write_csv(
     file_path: str, fieldnames: List[str], rows: List[Dict[str, str]]
 ) -> None:
     """
+    Autor : Gabriel Raulino
+
     Reescreve todo o arquivo CSV com uma nova lista de linhas. Essa operação
     sobrescreve o conteúdo existente no arquivo.
 
