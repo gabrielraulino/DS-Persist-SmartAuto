@@ -1,16 +1,11 @@
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
-from uuid import UUID
 from typing import List
-from models.cliente import Cliente
-from models.endereco import Endereco
-
-# from storage.file_handler import append_csv, read_csv
-import pandas as pd
 import uuid
+from models.cliente import Cliente
+
 
 clientes_router = APIRouter()
-# cliente_csv = "./src/storage/clientes.csv"
 clientes: List[Cliente] = []
 
 
@@ -23,20 +18,46 @@ def listar_clientes():
     "/clientes/", response_model=Cliente, status_code=HTTPStatus.CREATED
 )
 def insere_cliente(cliente: Cliente):
-    if any(c.id == cliente.id for c in clientes):
+    if cliente.endereco.id == None:
+        cliente.endereco.id = uuid.uuid4()
+    if cliente.id == None:
+        cliente.id = uuid.uuid4()
+    elif any(c.id == cliente.id for c in clientes):
         raise HTTPException(status_code=400, detail="ID já existe.")
-    cliente.id = uuid.uuid4()
-    cliente.endereco.id = uuid.uuid4()
+    # Verifica se id de cliente e endereco é não nulo
     clientes.append(cliente)
     return cliente
 
 
-@clientes_router.get("/clientes/{cliente_id}")
-def buscar_cliente(cliente_id: uuid.UUID):
+@clientes_router.get("/clientes/{id}")
+def buscar_cliente(id: uuid.UUID):
     for indice, cliente_atual in enumerate(clientes):
-        if cliente_atual.id == cliente_id:
+        if cliente_atual.id == id:
             return cliente_atual
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item não encontrado.")
+    raise HTTPException(
+        status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
+    )
 
 
-# Persistência dos clientes utilizando armazenamento em CSV
+@clientes_router.put("/clientes/{id}")
+def atualizar_cliente(id: uuid.UUID, atualizado: Cliente):
+    for index, c in enumerate(clientes):
+        if c.id == id:
+            if atualizado.id != id:
+                atualizado.id = id
+            clientes[index] = atualizado
+            return atualizado
+    raise HTTPException(
+        status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
+    )
+
+
+@clientes_router.delete("/clientes/{id}")
+def remover_cliente(id: uuid.UUID):
+    for c in clientes:
+        if c.id == id:
+            clientes.remove(c)
+            return {"msg": "cliente removido com sucesso!"}
+    raise HTTPException(
+        status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
+    )
