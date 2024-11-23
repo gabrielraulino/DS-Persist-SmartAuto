@@ -1,0 +1,72 @@
+[
+  {
+    "data": "2023-08-03",
+    "valor": 95000.0,
+    "vendedor": "5e1e1777-e0ae-4d47-8b0c-1bb89e85691b",
+    "cliente": "33293c3f-e40c-4b63-b233-4c292bb6d614",
+    "veiculo": "c936fff1-6be5-4678-a26d-2c75bb9223e6"
+  },
+  {
+    "data": "2023-09-15",
+    "valor": 74000.0,
+    "vendedor": "3d3175e7-57f8-4313-847b-754f6fd5674f",
+    "cliente": "511bd9ca-ea6a-40a2-99c6-eec6d73051a3",
+    "veiculo": "1d980bfc-319e-4069-8739-19bf4f5893f5"
+  },
+  {
+    "data": "2023-07-21",
+    "valor": 115000.0,
+    "vendedor": "955bce4b-8316-4992-8556-d772cc36569f",
+    "cliente": "ce2a737b-f461-493f-a90c-4e032165e305",
+    "veiculo": "14d931e7-df1c-4e33-bdc0-421a889caad7"
+  },
+  {
+    "data": "2023-06-12",
+    "valor": 99000.0,
+    "vendedor": "ab656538-f4d3-4527-8825-f2ebb0dbd679",
+    "cliente": "e550708d-6b70-4668-8642-9a80e7904db3",
+    "veiculo": "b0397341-188f-4ced-9f82-b20b796506f3"
+  },
+  {
+    "data": "2023-03-02",
+    "valor": 65000.0,
+    "vendedor": "2c499c96-0ab6-4e2e-83e7-52b95e88b695",
+    "cliente": "452296bc-5874-4f58-b2bb-00493163e4cd",
+    "veiculo": "bde21c3c-dc55-46d6-80fc-383fd62fd2e8"
+  },
+  {
+    "data": "2023-02-14",
+    "valor": 74000.0,
+    "vendedor": "10d65bab-5801-45d9-a3be-4ebd34c56c3a",
+    "cliente": "92c154d5-8f10-4b64-b49e-7a6209c391ad",
+    "veiculo": "1d980bfc-319e-4069-8739-19bf4f5893f5"
+  },
+  {
+    "data": "2023-04-18",
+    "valor": 99000.0,
+    "vendedor": "9e1198b0-8aa8-44f5-9308-92a5114988e7",
+    "cliente": "fac2a826-7eb2-4a36-99f0-d7a85b141812",
+    "veiculo": "b0397341-188f-4ced-9f82-b20b796506f3"
+  },
+  {
+    "data": "2023-08-09",
+    "valor": 115000.0,
+    "vendedor": "5b409ffe-8cb2-43d1-8fac-39d37df663f1",
+    "cliente": "fcfc4225-c6c4-482f-a3df-fe32fb879e2f",
+    "veiculo": "14d931e7-df1c-4e33-bdc0-421a889caad7"
+  },
+  {
+    "data": "2023-10-24",
+    "valor": 55000.0,
+    "vendedor": "54c78785-ea66-471e-a2d4-0486b08396ff",
+    "cliente": "692d2f33-9730-4720-b4ff-6ddcbcd33a7a",
+    "veiculo": "c5cc6528-ce16-42e7-ae48-c0b1ed2f578e"
+  },
+  {
+    "data": "2023-05-01",
+    "valor": 95000.0,
+    "vendedor": "d9b139d3-4582-477d-b6c7-9e1361151e8b",
+    "cliente": "33293c3f-e40c-4b63-b233-4c292bb6d614",
+    "veiculo": "c936fff1-6be5-4678-a26d-2c75bb9223e6"
+  }
+]

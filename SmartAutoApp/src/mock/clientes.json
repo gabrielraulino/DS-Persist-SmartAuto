@@ -108,17 +108,5 @@
       "logradouro": "Avenida Ana Costa",
       "numero": "707"
     }
-  },
-  {
-    "id": "865a6b1b-2c65-4d9f-becf-553d228802f6",
-    "nome": "Ana Oliveira",
-    "telefone": "(11) 99876-5432",
-    "email": "ana.oliveira@example.com",
-    "endereco": {
-      "uf": "SP",
-      "cidade": "São Paulo",
-      "logradouro": "Rua das Acácias",
-      "numero": "123"
-    }
   }
 ]
