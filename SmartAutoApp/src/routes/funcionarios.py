@@ -7,7 +7,9 @@ from fastapi import APIRouter, HTTPException
 import uuid
 from typing import List
 from models.funcionario import Funcionario, Role
-from utils.file_handler import read_csv, append_csv, write_csv
+from utils.file_handler import read_csv, append_csv, write_csv, count_elements
+from utils.zip_handler import compactar_csv
+from utils.hash_handler import calcular_hash_sha256
 
 funcionarios_router = APIRouter()
 file = "src/storage/funcionarios.csv"
@@ -19,9 +21,24 @@ funcionarios: List[Funcionario] = [
 ]  # casting de dict para Funcionario
 
 
+@funcionarios_router.get("/funcionarios/zip")
+def gerar_zip():
+    compactar_csv(file)
+
+
+@funcionarios_router.get("/funcionarios/hash")
+def gerar_hash():
+    return {"número hash": calcular_hash_sha256(file)}
+
+
 @funcionarios_router.get("/funcionarios/")
 def listar_clientes():
     return funcionarios
+
+
+@funcionarios_router.get("/funcionarios/qtd")
+def contar_elementos():
+    return count_elements(file)
 
 
 @funcionarios_router.post(
