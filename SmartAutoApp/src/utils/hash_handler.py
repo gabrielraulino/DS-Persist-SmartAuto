@@ -1,4 +1,11 @@
+"""
+Autor : Antonio Kleberson
+"""
+
 import hashlib
+
+from fastapi import HTTPException
+
 
 def calcular_hash_sha256(file_path: str) -> str:
     """
@@ -10,12 +17,9 @@ def calcular_hash_sha256(file_path: str) -> str:
     Returns:
         str: Hash SHA256 do arquivo.
     """
-    sha256 = hashlib.sha256()
+    # verifica se o path é válido
     try:
         with open(file_path, "rb") as file:
-            # Lê o arquivo em blocos para evitar problemas de memória com arquivos grandes
-            for bloco in iter(lambda: file.read(4096), b""):
-                sha256.update(bloco)
-        return sha256.hexdigest()
+            return hashlib.sha256(file.read()).hexdigest()
     except FileNotFoundError:
-        raise FileNotFoundError("Arquivo não encontrado.")
+        raise HTTPException(status_code=404, detail="Arquivo não encontrado.")

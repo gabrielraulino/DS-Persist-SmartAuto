@@ -1,7 +1,3 @@
-"""
-Autor : Gabriel Raulino
-"""
-
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
 import uuid
@@ -23,22 +19,22 @@ funcionarios: List[Funcionario] = [
 
 @funcionarios_router.get("/funcionarios/zip")
 def gerar_zip():
-    compactar_csv(file)
+    return compactar_csv(file)
 
 
 @funcionarios_router.get("/funcionarios/hash")
 def gerar_hash():
-    return {"número hash": calcular_hash_sha256(file)}
+    return {calcular_hash_sha256(file)}
 
 
 @funcionarios_router.get("/funcionarios/")
-def listar_clientes():
+def listar():
     return funcionarios
 
 
 @funcionarios_router.get("/funcionarios/qtd")
 def contar_elementos():
-    return count_elements(file)
+    return {"quantidade de funcionários no csv": count_elements(file)}
 
 
 @funcionarios_router.post(
