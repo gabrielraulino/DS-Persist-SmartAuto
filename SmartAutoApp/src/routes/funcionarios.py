@@ -1,7 +1,3 @@
-"""
-Autor : Gabriel Raulino
-"""
-
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
 import uuid
@@ -13,7 +9,6 @@ from utils.hash_handler import calcular_hash_sha256
 
 funcionarios_router = APIRouter()
 file = "src/storage/funcionarios.csv"
-campos = ["id", "usuario", "senha", "nome", "telefone", "funcao"]
 
 funcionarios_data = read_csv(file)  # funcionarios_data recebe um dict
 funcionarios: List[Funcionario] = [
@@ -23,22 +18,22 @@ funcionarios: List[Funcionario] = [
 
 @funcionarios_router.get("/funcionarios/zip")
 def gerar_zip():
-    compactar_csv(file)
+    return compactar_csv(file)
 
 
 @funcionarios_router.get("/funcionarios/hash")
 def gerar_hash():
-    return {"número hash": calcular_hash_sha256(file)}
+    return {calcular_hash_sha256(file)}
 
 
 @funcionarios_router.get("/funcionarios/")
-def listar_clientes():
+def listar():
     return funcionarios
 
 
 @funcionarios_router.get("/funcionarios/qtd")
 def contar_elementos():
-    return count_elements(file)
+    return {"quantidade de funcionários no csv": count_elements(file)}
 
 
 @funcionarios_router.post(
@@ -59,12 +54,12 @@ def inserir(funcionario: Funcionario):
         raise HTTPException(status_code=400, detail="ID já existe.")
     # Verifica se id de funcionario e endereco é não nulo
     funcionarios.append(funcionario)
-    append_csv(file, campos, funcionario.model_dump())
+    append_csv(file, funcionario.model_dump())
     return funcionario
 
 
 @funcionarios_router.get("/funcionarios/{id}")
-def buscar(id: uuid.UUID):
+def buscar_por_id(id: uuid.UUID):
     # for cliente_atual in funcionarios:
     for f in funcionarios:
         if f.id == id:
@@ -81,9 +76,7 @@ def atualizar(id: uuid.UUID, atualizado: Funcionario):
             if atualizado.id != id:
                 atualizado.id = id
             funcionarios[index] = atualizado
-            write_csv(
-                file, campos, [funcionario.model_dump() for funcionario in funcionarios]
-            )
+            write_csv(file, [funcionario.model_dump() for funcionario in funcionarios])
             return atualizado
     raise HTTPException(
         status_code=HTTPStatus.NOT_FOUND, detail="Funcionário não encontrado."
@@ -95,9 +88,7 @@ def remover(id: uuid.UUID):
     for f in funcionarios:
         if f.id == id:
             funcionarios.remove(f)
-            write_csv(
-                file, campos, [funcionario.model_dump() for funcionario in funcionarios]
-            )
+            write_csv(file, [funcionario.model_dump() for funcionario in funcionarios])
             return {"msg": "cliente removido com sucesso!"}
     raise HTTPException(
         status_code=HTTPStatus.NOT_FOUND, detail="Funcionário não encontrado."

@@ -13,7 +13,7 @@ veiculos_data = read_csv(file)  # Carrega os dados do arquivo CSV
 veiculos: List[Veiculo] = [Veiculo(**v) for v in veiculos_data]
 
 
-@veiculos_router.get("/veiculos/", response_model=List[Veiculo])
+@veiculos_router.get("/veiculos/")
 def listar_veiculos():
     return veiculos
 
