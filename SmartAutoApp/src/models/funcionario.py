@@ -26,3 +26,21 @@ class Funcionario(BaseModel):
     nome: str
     telefone: str
     funcao: Role
+
+    def __init__(
+        self,
+        id: Union[uuid.UUID, None],
+        usuario: str,
+        senha: str,
+        nome: str,
+        telefone: str,
+        funcao: Role,
+    ):
+        super().__init__(
+            id=id,
+            usuario=usuario,
+            senha=senha,
+            nome=nome,
+            telefone=telefone,
+            funcao=funcao.lower(),
+        )

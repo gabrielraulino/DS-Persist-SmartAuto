@@ -5,70 +5,85 @@ Autor: Gabriel Raulino
 from fastapi import APIRouter, HTTPException
 from http import HTTPStatus
 import uuid
-from typing import List
-from datetime import date
 from models.venda import Venda
-from utils.file_handler import read_csv, append_csv, write_csv
+from utils.file_handler import read_csv, append_csv
 
-vendas_router = APIRouter()
+vendas_router = APIRouter(prefix="/vendas", tags=["Vendas"])
 file = "src/storage/vendas.csv"
-campos = ["id", "data", "valor", "cliente_id", "vendedor_id", "veiculo_id"]
+campos = [
+    "id",
+    "valor",
+    "cliente_id",
+    "vendedor_id",
+    "veiculo_id",
+]
 
-vendas_data = read_csv(file)  # Carrega os dados do arquivo CSV
-vendas: List[Venda] = [Venda(**v) for v in vendas_data]
+locacoes_data = read_csv(file)  # Carrega os dados do arquivo CSV
 
 
-@vendas_router.get("/vendas/", response_model=List[Venda])
-def listar_vendas():
-    return vendas
+@vendas_router.get("/")
+def litar():
+    if locacoes_data.empty:
+        return []
+    return locacoes_data.to_dict(orient="records")
 
 
-@vendas_router.post("/vendas/", response_model=Venda, status_code=HTTPStatus.CREATED)
-def criar_venda(venda: Venda):
-    if venda.data is None:
-        venda.data = date.today()
+@vendas_router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
+def criar(venda: Venda):
+    global locacoes_data
     if venda.id is None:
         venda.id = uuid.uuid4()
-    elif any(v.id == venda.id for v in vendas):
+    elif (
+        "id" in locacoes_data.columns
+        and not locacoes_data[locacoes_data["id"] == str(venda.id)].empty
+    ):
         raise HTTPException(status_code=400, detail="ID já existe.")
-
-    # Adiciona a venda à lista
-    vendas.append(venda)
-    append_csv(file, campos, venda.model_dump())
+    locacoes_data = append_csv(file, campos, venda.model_dump(), locacoes_data)
     return venda
 
 
-@vendas_router.get("/vendas/{id}", response_model=Venda)
-def buscar_venda(id: uuid.UUID):
-    for v in vendas:
-        if v.id == id:
-            return v
-    raise HTTPException(
-        status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
-    )
+@vendas_router.get("/{id}", response_model=Venda)
+def buscar(id: uuid.UUID):
+    global locacoes_data
+    if locacoes_data.empty:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Lista Vazia")
+    venda = locacoes_data[locacoes_data["id"] == str(id)]
+    if venda.empty:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Locação não encontrada."
+        )
+    return venda.to_dict(orient="records")[0]
 
 
-@vendas_router.put("/vendas/{id}", response_model=Venda)
-def atualizar_venda(id: uuid.UUID, atualizado: Venda):
-    for index, v in enumerate(vendas):
-        if v.id == id:
-            if atualizado.id != id:
-                atualizado.id = id
-            vendas[index] = atualizado
-            write_csv(file, campos, [venda.model_dump() for venda in vendas])
-            return atualizado
-    raise HTTPException(
-        status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
-    )
+@vendas_router.put("/{id}", response_model=Venda)
+def atualizar(id: uuid.UUID, atualizado: Venda):
+    global locacoes_data
+    if locacoes_data.empty:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Vazio.")
+    if atualizado.id == None:
+        atualizado.id = id
+    venda = locacoes_data[locacoes_data["id"] == str(id)]
+    if venda.empty:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
+        )
+    locacoes_data.loc[venda.index[0]] = atualizado.model_dump()
+    locacoes_data.to_csv(file, index=False)
+    return atualizado
 
 
-@vendas_router.delete("/vendas/{id}")
-def remover_venda(id: uuid.UUID):
-    for v in vendas:
-        if v.id == id:
-            vendas.remove(v)
-            write_csv(file, campos, [venda.model_dump() for venda in vendas])
-            return {"msg": "Venda removida com sucesso!"}
-    raise HTTPException(
-        status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
-    )
+@vendas_router.delete("/{id}")
+def remover(id: uuid.UUID):
+    global locacoes_data
+    if locacoes_data.empty:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Não existe nenhuma Venda."
+        )
+    venda = locacoes_data[locacoes_data["id"] == str(id)]
+    if venda.empty:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
+        )
+    locacoes_data = locacoes_data.drop(venda.index[0])
+    locacoes_data.to_csv(file, index=False)
+    return {"Venda apaga com sucesso"}

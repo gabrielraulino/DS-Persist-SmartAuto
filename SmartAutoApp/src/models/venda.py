@@ -9,6 +9,6 @@ class Venda(BaseModel):
     id: Union[uuid.UUID, None] = None
     data: Union[date, None] = None
     valor: float
-    vendedor: uuid.UUID
-    cliente: uuid.UUID
-    veiculo: uuid.UUID
+    vendedor_id: uuid.UUID
+    cliente_id: uuid.UUID
+    veiculo_id: uuid.UUID

@@ -1,7 +1,8 @@
-.venv
+smartauto
 .ruff_cache
 .pyc
 __pycache__/
 .vscode
 .idea
 SmartAutoApp/src/storage/funcionarios.zip
+SmartAutoApp/ola.py
