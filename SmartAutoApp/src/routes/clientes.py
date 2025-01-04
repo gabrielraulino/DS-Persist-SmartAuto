@@ -4,90 +4,91 @@ Autor : Gabriel Raulino
 
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
-from typing import List
-from uuid import UUID
 import uuid
 from models.cliente.cliente import Cliente
-from models.cliente.endereco import Endereco
-from utils.file_handler import read_csv, append_csv, write_csv
+from utils.file_handler import read_csv, append_csv
+from utils.zip_handler import compactar_csv
+from utils.hash_handler import calcular_hash_sha256
 
-clientes_router = APIRouter()
-file = "src/storage/clientes.csv"
+clientes_router = APIRouter(prefix="/clientes", tags=["Clientes"])
 campos = ["id", "nome", "telefone", "email", "endereco"]
+file = "src/storage/clientes.csv"
 clientes_data = read_csv(file)
-# clientes: List[Cliente] = [Cliente(**c) for c in clientes_data]
-
-clientes: List[Cliente] = []
-for c in clientes_data:
-    try:
-        # Verifica se o campo 'endereco' é uma string e tenta convertê-lo em um dicionário
-        if isinstance(c["endereco"], str):
-            c["endereco"] = eval(c["endereco"])
-
-        # Se o campo 'endereco' for um dicionário válido, converte-o para uma instância de Endereco
-        if isinstance(c["endereco"], dict):
-            c["endereco"] = Endereco(**c["endereco"])
-
-        # Adiciona à lista de clientes como uma instância de Cliente
-        clientes.append(Cliente(**c))
-    except (SyntaxError, TypeError, ValueError) as e:
-        # Caso ocorra um erro de conversão, ignora o cliente atual e continua
-        print(f"Erro ao converter o endereço do cliente com ID {c.get('id')}: {e}")
 
 
-@clientes_router.get("/clientes/")
-def listar_clientes():
-    return clientes
+@clientes_router.get("/zip")
+def gerar_zip():
+    return compactar_csv(file)
 
 
-@clientes_router.post(
-    "/clientes/", response_model=Cliente, status_code=HTTPStatus.CREATED
-)
-def insere_cliente(cliente: Cliente):
-    # Verifica se id de cliente e endereco é não nulo, caso for, faz atribuição automática
+@clientes_router.get("/hash")
+def gerar_hash():
+    return {calcular_hash_sha256(file)}
+
+
+@clientes_router.get("/qtd")
+def contar_elementos():
+    return {"quantidade de clientes no csv": len(clientes_data)}
+
+
+@clientes_router.get("/", status_code=HTTPStatus.OK)
+def listar():
+    if clientes_data.empty:
+        return []
+    return clientes_data.to_dict(orient="records")
+
+
+@clientes_router.get("/{id}", response_model=Cliente)
+def buscar_funcionario(id: str):
+    global clientes_data
+    cliente = clientes_data[clientes_data["id"] == id]
+    if cliente.empty:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
+        )
+    return cliente.to_dict(orient="records")[0]
+
+
+@clientes_router.post("/", response_model=Cliente, status_code=HTTPStatus.CREATED)
+def inserir(cliente: Cliente):
+    global clientes_data
+    if cliente.id is None:
+        cliente.id = uuid.uuid4()
+    elif not clientes_data[clientes_data["id"] == cliente.id].empty:
+        raise HTTPException(status_code=400, detail="ID já existe.")
+    cliente_validado = Cliente.model_validate(cliente)
+    clientes_data = append_csv(
+        file, campos, cliente_validado.model_dump(), clientes_data
+    )
     if cliente.endereco.id == None:
         cliente.endereco.id = uuid.uuid4()
-    if cliente.id == None:
-        cliente.id = uuid.uuid4()
-    elif any(c.id == cliente.id for c in clientes):
-        raise HTTPException(status_code=400, detail="ID já existe.")
-    clientes.append(cliente)
-
-    append_csv(file, campos, cliente.model_dump())
-    return cliente
+    return cliente_validado
 
 
-@clientes_router.get("/clientes/{id}")
-def buscar_cliente(id: uuid.UUID):
-    for cliente_atual in clientes:
-        if cliente_atual.id == id:
-            return cliente_atual
-    raise HTTPException(
-        status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
-    )
+@clientes_router.put("/{id}", response_model=Cliente)
+def atualizar(id: uuid.UUID, cliente: Cliente):
+    global clientes_data
+    elemento = clientes_data[clientes_data["id"] == str(id)]
+    if elemento.empty:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
+        )
+    if cliente.id is None:
+        cliente.id = id
+    cliente_validado = Cliente.model_validate(cliente)
+    clientes_data.loc[elemento.index[0]] = cliente_validado.model_dump()
+    clientes_data.to_csv(file, index=False)
+    return cliente_validado
 
 
-@clientes_router.put("/clientes/{id}")
-def atualizar_cliente(id: uuid.UUID, atualizado: Cliente):
-    for index, c in enumerate(clientes):
-        if c.id == id:
-            if atualizado.id != id:
-                atualizado.id = id
-            clientes[index] = atualizado
-            write_csv(file, campos, [cliente.model_dump() for cliente in clientes])
-            return atualizado
-    raise HTTPException(
-        status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
-    )
-
-
-@clientes_router.delete("/clientes/{id}")
-def remover_cliente(id: uuid.UUID):
-    for c in clientes:
-        if c.id == id:
-            clientes.remove(c)
-            write_csv(file, campos, [cliente.model_dump() for cliente in clientes])
-            return {"msg": "cliente removido com sucesso!"}
-    raise HTTPException(
-        status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
-    )
+@clientes_router.delete("/{id}")
+def excluir(id: uuid.UUID):
+    global clientes_data
+    elemento = clientes_data[clientes_data["id"] == id]
+    if elemento.empty:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
+        )
+    clientes_data = clientes_data.drop(elemento.index[0])
+    clientes_data.to_csv(file, index=False)
+    return {"detail": "Cliente excluído com sucesso"}
