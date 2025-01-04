@@ -22,7 +22,7 @@ locacoes_data = read_csv(file)  # Carrega os dados do arquivo CSV
 
 
 @vendas_router.get("/")
-def litar():
+def listar():
     if locacoes_data.empty:
         return []
     return locacoes_data.to_dict(orient="records")
@@ -43,11 +43,11 @@ def criar(venda: Venda):
 
 
 @vendas_router.get("/{id}", response_model=Venda)
-def buscar(id: uuid.UUID):
+def buscar(id: str):
     global locacoes_data
     if locacoes_data.empty:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Lista Vazia")
-    venda = locacoes_data[locacoes_data["id"] == str(id)]
+    venda = locacoes_data[locacoes_data["id"] == id]
     if venda.empty:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Locação não encontrada."
@@ -56,13 +56,13 @@ def buscar(id: uuid.UUID):
 
 
 @vendas_router.put("/{id}", response_model=Venda)
-def atualizar(id: uuid.UUID, atualizado: Venda):
+def atualizar(id: str, atualizado: Venda):
     global locacoes_data
     if locacoes_data.empty:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Vazio.")
     if atualizado.id == None:
         atualizado.id = id
-    venda = locacoes_data[locacoes_data["id"] == str(id)]
+    venda = locacoes_data[locacoes_data["id"] == id]
     if venda.empty:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
@@ -73,13 +73,13 @@ def atualizar(id: uuid.UUID, atualizado: Venda):
 
 
 @vendas_router.delete("/{id}")
-def remover(id: uuid.UUID):
+def remover(id: str):
     global locacoes_data
     if locacoes_data.empty:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Não existe nenhuma Venda."
         )
-    venda = locacoes_data[locacoes_data["id"] == str(id)]
+    venda = locacoes_data[locacoes_data["id"] == id]
     if venda.empty:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."

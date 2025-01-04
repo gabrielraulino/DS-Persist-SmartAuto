@@ -66,9 +66,9 @@ def inserir(cliente: Cliente):
 
 
 @clientes_router.put("/{id}", response_model=Cliente)
-def atualizar(id: uuid.UUID, cliente: Cliente):
+def atualizar(id: str, cliente: Cliente):
     global clientes_data
-    elemento = clientes_data[clientes_data["id"] == str(id)]
+    elemento = clientes_data[clientes_data["id"] == id]
     if elemento.empty:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
@@ -82,7 +82,7 @@ def atualizar(id: uuid.UUID, cliente: Cliente):
 
 
 @clientes_router.delete("/{id}")
-def excluir(id: uuid.UUID):
+def excluir(id: str):
     global clientes_data
     elemento = clientes_data[clientes_data["id"] == id]
     if elemento.empty:

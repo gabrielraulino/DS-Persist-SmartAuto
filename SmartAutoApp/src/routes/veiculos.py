@@ -34,7 +34,7 @@ def criar(veiculo: Veiculo):
 
 
 @veiculos_router.get("/{id}", response_model=Veiculo)
-def buscar(id: uuid.UUID):
+def buscar(id: str):
     global veiculos_data
     veiculo = veiculos_data[veiculos_data["id"] == id]
     if veiculo.empty:
@@ -45,7 +45,7 @@ def buscar(id: uuid.UUID):
 
 
 @veiculos_router.put("/{id}", response_model=Veiculo)
-def atualizar(id: uuid.UUID, veiculo: Veiculo):
+def atualizar(id: str, veiculo: Veiculo):
     global veiculos_data
     elemento = veiculos_data[veiculos_data["id"] == id]
     if elemento.empty:
@@ -61,7 +61,7 @@ def atualizar(id: uuid.UUID, veiculo: Veiculo):
 
 
 @veiculos_router.delete("/{id}")
-def remover(id: uuid.UUID):
+def remover(id: str):
     global veiculos_data
     elemento = veiculos_data[veiculos_data["id"] == id]
     if elemento.empty:

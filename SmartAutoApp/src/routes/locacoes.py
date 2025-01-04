@@ -44,11 +44,11 @@ def criar(locacao: Locacao):
 
 
 @locacoes_router.get("/{id}", response_model=Locacao)
-def buscar_por_id(id: uuid.UUID):
+def buscar_por_id(id: str):
     global locacoes_data
     if locacoes_data.empty:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Lista Vazia")
-    locacao = locacoes_data[locacoes_data["id"] == str(id)]
+    locacao = locacoes_data[locacoes_data["id"] == id]
     if locacao.empty:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Locação não encontrada."
@@ -57,7 +57,7 @@ def buscar_por_id(id: uuid.UUID):
 
 
 @locacoes_router.put("/{id}", response_model=Locacao)
-def atualizar(id: uuid.UUID, atualizado: Locacao):
+def atualizar(id: str, atualizado: Locacao):
     global locacoes_data
     if locacoes_data.empty:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Vazio.")
@@ -74,13 +74,13 @@ def atualizar(id: uuid.UUID, atualizado: Locacao):
 
 
 @locacoes_router.delete("/{id}")
-def remover(id: uuid.UUID):
+def remover(id: str):
     global locacoes_data
     if locacoes_data.empty:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Não existe nenhuma locação."
         )
-    locacao = locacoes_data[locacoes_data["id"] == str(id)]
+    locacao = locacoes_data[locacoes_data["id"] == id]
     if locacao.empty:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Locação não encontrada."
