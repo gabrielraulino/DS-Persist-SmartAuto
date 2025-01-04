@@ -54,27 +54,3 @@ def append_csv(
             writer.writeheader()
         writer.writerow(row)
     return dataframe
-
-
-# Função para reescrever todo o arquivo CSV com novos dados
-def write_csv(file_path: str, rows: List[Dict[str, str]]) -> None:
-    """
-    Autor : Gabriel Raulino
-
-    Reescreve todo o arquivo CSV com uma nova lista de linhas. Essa operação
-    sobrescreve o conteúdo existente no arquivo.
-
-    Args:
-        file_path (str): O caminho do arquivo CSV a ser reescrito.
-        rows (List[Dict[str, str]]): Lista de dicionários, onde cada dicionário representa uma linha do CSV.
-    """
-    df = pd.DataFrame(rows)
-    df.to_csv(file_path, index=False)
-
-
-def count_elements(file_path: str) -> int:
-    try:
-        df = pd.read_csv(file_path)
-        return len(df)
-    except Exception:
-        return 0
