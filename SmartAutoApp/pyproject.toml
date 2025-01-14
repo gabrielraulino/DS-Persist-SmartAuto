@@ -9,4 +9,5 @@ dependencies = [
     "pandas>=2.2.3",
     "pydantic>=2.9.2",
     "ruff>=0.7.4",
+    "sqlmodel>=0.0.22",
 ]
