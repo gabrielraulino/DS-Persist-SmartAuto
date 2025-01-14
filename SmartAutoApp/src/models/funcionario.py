@@ -3,10 +3,7 @@ Autor: Gabriel Raulino
 """
 
 from enum import Enum
-from typing import Union
-import uuid
-
-from pydantic import BaseModel
+from sqlmodel import SQLModel, Field
 
 
 class Role(str, Enum):
@@ -15,32 +12,14 @@ class Role(str, Enum):
     ADMIN = "admin"
 
 
-class Funcionario(BaseModel):
+class Funcionario(SQLModel, table=True):
     """
     Autor: Gabriel Raulino
     """
 
-    id: Union[uuid.UUID, None] = None
+    id: int | None = Field(default=None, primary_key=True)
     usuario: str
     senha: str
     nome: str
     telefone: str
     funcao: Role
-
-    def __init__(
-        self,
-        id: Union[uuid.UUID, None],
-        usuario: str,
-        senha: str,
-        nome: str,
-        telefone: str,
-        funcao: Role,
-    ):
-        super().__init__(
-            id=id,
-            usuario=usuario,
-            senha=senha,
-            nome=nome,
-            telefone=telefone,
-            funcao=funcao.lower(),
-        )

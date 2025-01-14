@@ -1,10 +1,9 @@
 from typing import Union
-from pydantic import BaseModel
-import uuid
+from sqlmodel import SQLModel, Field
 
 
-class Veiculo(BaseModel):
-    id: Union[uuid.UUID, None] = None
+class Veiculo(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     marca: str
     modelo: str
     ano: int

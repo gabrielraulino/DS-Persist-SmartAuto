@@ -5,40 +5,40 @@ Autor : Gabriel Raulino
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
 import uuid
-from models.cliente.cliente import Cliente
+from models.cliente import Cliente
 from utils.file_handler import read_csv, append_csv
 from utils.zip_handler import compactar_csv
 from utils.hash_handler import calcular_hash_sha256
 
-clientes_router = APIRouter(prefix="/clientes", tags=["Clientes"])
+router = APIRouter(prefix="/clientes", tags=["Clientes"])
 campos = ["id", "nome", "telefone", "email", "endereco"]
 file = "src/storage/clientes.csv"
 clientes_data = read_csv(file)
 
 
-@clientes_router.get("/zip")
+@router.get("/zip")
 def gerar_zip():
     return compactar_csv(file)
 
 
-@clientes_router.get("/hash")
+@router.get("/hash")
 def gerar_hash():
     return {calcular_hash_sha256(file)}
 
 
-@clientes_router.get("/qtd")
+@router.get("/qtd")
 def contar_elementos():
     return {"quantidade de clientes no csv": len(clientes_data)}
 
 
-@clientes_router.get("/", status_code=HTTPStatus.OK)
+@router.get("/", status_code=HTTPStatus.OK)
 def listar():
     if clientes_data.empty:
         return []
     return clientes_data.to_dict(orient="records")
 
 
-@clientes_router.get("/{id}", response_model=Cliente)
+@router.get("/{id}", response_model=Cliente)
 def buscar_funcionario(id: str):
     global clientes_data
     cliente = clientes_data[clientes_data["id"] == id]
@@ -49,7 +49,7 @@ def buscar_funcionario(id: str):
     return cliente.to_dict(orient="records")[0]
 
 
-@clientes_router.post("/", response_model=Cliente, status_code=HTTPStatus.CREATED)
+@router.post("/", response_model=Cliente, status_code=HTTPStatus.CREATED)
 def inserir(cliente: Cliente):
     global clientes_data
     if cliente.id is None:
@@ -65,7 +65,7 @@ def inserir(cliente: Cliente):
     return cliente_validado
 
 
-@clientes_router.put("/{id}", response_model=Cliente)
+@router.put("/{id}", response_model=Cliente)
 def atualizar(id: uuid.UUID, cliente: Cliente):
     global clientes_data
     elemento = clientes_data[clientes_data["id"] == str(id)]
@@ -81,7 +81,7 @@ def atualizar(id: uuid.UUID, cliente: Cliente):
     return cliente_validado
 
 
-@clientes_router.delete("/{id}")
+@router.delete("/{id}")
 def excluir(id: uuid.UUID):
     global clientes_data
     elemento = clientes_data[clientes_data["id"] == id]

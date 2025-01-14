@@ -4,21 +4,21 @@ import uuid
 from models.veiculo import Veiculo
 from utils.file_handler import read_csv, append_csv
 
-veiculos_router = APIRouter(prefix="/veiculos", tags=["Veiculos"])
+router = APIRouter(prefix="/veiculos", tags=["Veiculos"])
 file = "src/storage/veiculos.csv"
 campos = ["id", "marca", "modelo", "ano", "preco", "valor_diaria", "disponivel", "cor"]
 
 veiculos_data = read_csv(file)  # Carrega os dados do arquivo CSV
 
 
-@veiculos_router.get("/")
+@router.get("/")
 def listar():
     if veiculos_data.empty:
         return []
     return veiculos_data.to_dict(orient="records")
 
 
-@veiculos_router.post("/", response_model=Veiculo, status_code=HTTPStatus.CREATED)
+@router.post("/", response_model=Veiculo, status_code=HTTPStatus.CREATED)
 def criar(veiculo: Veiculo):
     global veiculos_data
     if veiculo.id is None:
@@ -33,7 +33,7 @@ def criar(veiculo: Veiculo):
     return veiculo_validado
 
 
-@veiculos_router.get("/{id}", response_model=Veiculo)
+@router.get("/{id}", response_model=Veiculo)
 def buscar(id: uuid.UUID):
     global veiculos_data
     veiculo = veiculos_data[veiculos_data["id"] == id]
@@ -44,7 +44,7 @@ def buscar(id: uuid.UUID):
     return veiculo.to_dict(orient="records")[0]
 
 
-@veiculos_router.put("/{id}", response_model=Veiculo)
+@router.put("/{id}", response_model=Veiculo)
 def atualizar(id: uuid.UUID, veiculo: Veiculo):
     global veiculos_data
     elemento = veiculos_data[veiculos_data["id"] == id]
@@ -60,7 +60,7 @@ def atualizar(id: uuid.UUID, veiculo: Veiculo):
     return veiculo_validado
 
 
-@veiculos_router.delete("/{id}")
+@router.delete("/{id}")
 def remover(id: uuid.UUID):
     global veiculos_data
     elemento = veiculos_data[veiculos_data["id"] == id]

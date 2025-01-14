@@ -8,7 +8,7 @@ import uuid
 from models.venda import Venda
 from utils.file_handler import read_csv, append_csv
 
-vendas_router = APIRouter(prefix="/vendas", tags=["Vendas"])
+router = APIRouter(prefix="/vendas", tags=["Vendas"])
 file = "src/storage/vendas.csv"
 campos = [
     "id",
@@ -21,14 +21,14 @@ campos = [
 locacoes_data = read_csv(file)  # Carrega os dados do arquivo CSV
 
 
-@vendas_router.get("/")
+@router.get("/")
 def litar():
     if locacoes_data.empty:
         return []
     return locacoes_data.to_dict(orient="records")
 
 
-@vendas_router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
+@router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
 def criar(venda: Venda):
     global locacoes_data
     if venda.id is None:
@@ -42,7 +42,7 @@ def criar(venda: Venda):
     return venda
 
 
-@vendas_router.get("/{id}", response_model=Venda)
+@router.get("/{id}", response_model=Venda)
 def buscar(id: uuid.UUID):
     global locacoes_data
     if locacoes_data.empty:
@@ -55,7 +55,7 @@ def buscar(id: uuid.UUID):
     return venda.to_dict(orient="records")[0]
 
 
-@vendas_router.put("/{id}", response_model=Venda)
+@router.put("/{id}", response_model=Venda)
 def atualizar(id: uuid.UUID, atualizado: Venda):
     global locacoes_data
     if locacoes_data.empty:
@@ -72,7 +72,7 @@ def atualizar(id: uuid.UUID, atualizado: Venda):
     return atualizado
 
 
-@vendas_router.delete("/{id}")
+@router.delete("/{id}")
 def remover(id: uuid.UUID):
     global locacoes_data
     if locacoes_data.empty:

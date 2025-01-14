@@ -6,7 +6,7 @@ from datetime import date
 from models.locacao import Locacao
 from utils.file_handler import read_csv, append_csv
 
-locacoes_router = APIRouter(prefix="/locacoes", tags=["Locacoes"])
+router = APIRouter(prefix="/locacoes", tags=["Locacoes"])
 file = "src/storage/locacoes.csv"
 campos = [
     "id",
@@ -21,14 +21,14 @@ campos = [
 locacoes_data = read_csv(file)  # Carrega os dados do arquivo CSV
 
 
-@locacoes_router.get("/")
+@router.get("/")
 def listar():
     if locacoes_data.empty:
         return []
     return locacoes_data.to_dict(orient="records")
 
 
-@locacoes_router.post("/", response_model=Locacao, status_code=HTTPStatus.CREATED)
+@router.post("/", response_model=Locacao, status_code=HTTPStatus.CREATED)
 def criar(locacao: Locacao):
     global locacoes_data
     if locacao.id is None:
@@ -43,7 +43,7 @@ def criar(locacao: Locacao):
     return locacao
 
 
-@locacoes_router.get("/{id}", response_model=Locacao)
+@router.get("/{id}", response_model=Locacao)
 def buscar_por_id(id: uuid.UUID):
     global locacoes_data
     if locacoes_data.empty:
@@ -56,7 +56,7 @@ def buscar_por_id(id: uuid.UUID):
     return locacao.to_dict(orient="records")[0]
 
 
-@locacoes_router.put("/{id}", response_model=Locacao)
+@router.put("/{id}", response_model=Locacao)
 def atualizar(id: uuid.UUID, atualizado: Locacao):
     global locacoes_data
     if locacoes_data.empty:
@@ -73,7 +73,7 @@ def atualizar(id: uuid.UUID, atualizado: Locacao):
     return atualizado
 
 
-@locacoes_router.delete("/{id}")
+@router.delete("/{id}")
 def remover(id: uuid.UUID):
     global locacoes_data
     if locacoes_data.empty:

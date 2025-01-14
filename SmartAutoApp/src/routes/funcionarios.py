@@ -5,88 +5,78 @@ from models.funcionario import Funcionario
 from utils.file_handler import read_csv, append_csv
 from utils.zip_handler import compactar_csv
 from utils.hash_handler import calcular_hash_sha256
+from fastapi import APIRouter, HTTPException, Depends, Query
+from sqlmodel import Session, select
+from models.funcionario import Funcionario
+from database.database import get_session
 
-funcionarios_router = APIRouter(prefix="/funcionarios", tags=["Funcionarios"])
+router = APIRouter(prefix="/funcionarios", tags=["Funcionarios"])
 file = "src/storage/funcionarios.csv"
 campos = ["id", "usuario", "senha", "nome", "telefone", "funcao"]
 
 funcionarios_data = read_csv(file)  # Carrega os dados do arquivo CSV
 
 
-@funcionarios_router.get("/zip")
-def gerar_zip():
-    return compactar_csv(file)
+# @router.get("/zip")
+# def gerar_zip():
+#     return compactar_csv(file)
 
 
-@funcionarios_router.get("/hash")
-def gerar_hash():
-    return {calcular_hash_sha256(file)}
+# @router.get("/hash")
+# def gerar_hash():
+#     return {calcular_hash_sha256(file)}
 
 
-@funcionarios_router.get("/qtd")
-def contar_elementos():
-    return {"quantidade de funcionários no csv": len(funcionarios_data)}
+# @router.get("/qtd")
+# def contar_elementos():
+#     return {"quantidade de funcionários no csv": len(funcionarios_data)}
 
 
-@funcionarios_router.get("/")
-def listar_funcionarios():
-    if funcionarios_data.empty:
-        return {"msg": "lista vazia"}
-    return funcionarios_data.to_dict(orient="records")
+@router.get("/", response_model=list[Funcionario])
+def listar_funcionarios(
+    offset: int = 0,
+    limit: int = Query(default=10, le=100),
+    session: Session = Depends(get_session),
+):
+    return session.exec(select(Funcionario).offset(offset).limit(limit)).all()
 
 
-@funcionarios_router.get("/{id}", response_model=Funcionario)
-def buscar_funcionario(id: str):
-    global funcionarios_data
-    funcionario = funcionarios_data[funcionarios_data["id"] == id]
-    if funcionario.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Funcionário não encontrado."
-        )
-    return funcionario.to_dict(orient="records")[0]
+@router.get("/{funcionario_id}", response_model=Funcionario)
+def read_user(user_id: int, session: Session = Depends(get_session)):
+    funcionario = session.get(Funcionario, user_id)
+    if not funcionario:
+        raise HTTPException(status_code=404, detail="Funcionario not found")
+    return funcionario
 
 
-@funcionarios_router.post(
-    "/", response_model=Funcionario, status_code=HTTPStatus.CREATED
-)
-def criar_funcionario(funcionario: Funcionario):
-    global funcionarios_data
-    if funcionario.id is None:
-        funcionario.id = uuid.uuid4()
-    elif funcionarios_data[funcionarios_data["id"] == funcionario.id].empty:
-        raise HTTPException(status_code=400, detail="ID já existe.")
-    funcionario_validado = Funcionario.model_validate(funcionario)
-    funcionarios_data = append_csv(
-        file, campos, funcionario_validado.model_dump(), funcionarios_data
-    )
-    return funcionario_validado
+@router.post("/", response_model=Funcionario)
+def create_user(funcionario: Funcionario, session: Session = Depends(get_session)):
+    session.add(funcionario)
+    session.commit()
+    session.refresh(funcionario)
+    return funcionario
 
 
-@funcionarios_router.put("/{id}", response_model=Funcionario)
-def atualizar_funcionario(id: str, funcionario: Funcionario):
-    global funcionarios_data
-    elemento = funcionarios_data[funcionarios_data["id"] == id]
-    if elemento.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Funcionário não encontrado."
-        )
-    if funcionario.id is None:
-        funcionario.id = id
-    funcionario_validado = Funcionario.model_validate(funcionario)
-    funcionarios_data.loc[elemento.index[0]] = funcionario_validado.model_dump()
-    funcionarios_data.to_csv(file, index=False)
-    return funcionario_validado
+@router.put("/{funcionario_id}", response_model=Funcionario)
+def update_user(
+    funcionario_id: int, user: Funcionario, session: Session = Depends(get_session)
+):
+    db_funcionario = session.get(Funcionario, funcionario_id)
+    if not db_funcionario:
+        raise HTTPException(status_code=404, detail="User not found")
+    for key, value in user.dict(exclude_unset=True).items():
+        setattr(db_funcionario, key, value)
+    session.add(db_funcionario)
+    session.commit()
+    session.refresh(db_funcionario)
+    return db_funcionario
 
 
-@funcionarios_router.delete("/{id}")
-def remover_funcionario(id: str):
-    global funcionarios_data
-    elemento = funcionarios_data[funcionarios_data["id"] == id]
-    if elemento.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Funcionário não encontrado."
-        )
-    index = elemento.index[0]
-    funcionarios_data = funcionarios_data.drop(index)
-    funcionarios_data.to_csv(file, index=False)
-    return {"detail": "Funcionário excluído com sucesso"}
+@router.delete("/{funcionario_id}")
+def delete_user(funcionario_id: int, session: Session = Depends(get_session)):
+    func = session.get(Funcionario, funcionario_id)
+    if not func:
+        raise HTTPException(status_code=404, detail="Funcionario not found")
+    session.delete(func)
+    session.commit()
+    return {"ok": True}
