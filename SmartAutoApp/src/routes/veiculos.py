@@ -1,40 +1,34 @@
-from fastapi import APIRouter, HTTPException
-from http import HTTPStatus
-import uuid
+from fastapi import APIRouter, HTTPException, Depends, Query
+from sqlmodel import Session, select
 from models.veiculo import Veiculo
-from utils.file_handler import read_csv, append_csv
+from database.database import get_session
 
-veiculos_router = APIRouter(prefix="/veiculos", tags=["Veiculos"])
+router = APIRouter(prefix="/veiculos", tags=["Veiculos"])
 file = "src/storage/veiculos.csv"
 campos = ["id", "marca", "modelo", "ano", "preco", "valor_diaria", "disponivel", "cor"]
 
-veiculos_data = read_csv(file)  # Carrega os dados do arquivo CSV
+
+@router.get("/", response_model=list[Veiculo])
+def listar_veiculos(
+    offset: int = 0,
+    limit: int = Query(default=10, le=100),
+    session: Session = Depends(get_session),
+    disponiveis: bool = True,
+):
+    if disponiveis:
+        return session.exec(select(Veiculo).offset(offset).limit(limit)).all()
 
 
-@veiculos_router.get("/")
-def listar():
-    if veiculos_data.empty:
-        return []
-    return veiculos_data.to_dict(orient="records")
-
-
-@veiculos_router.post("/", response_model=Veiculo, status_code=HTTPStatus.CREATED)
-def criar(veiculo: Veiculo):
-    global veiculos_data
-    if veiculo.id is None:
-        veiculo.id = uuid.uuid4()
-    elif not veiculos_data[veiculos_data["id"] == veiculo.id].empty:
-        raise HTTPException(status_code=400, detail="ID já existe.")
-    veiculo_validado = Veiculo.model_validate(veiculo)
-    veiculo_validado = Veiculo.par
-    veiculos_data = append_csv(
-        file, campos, veiculo_validado.model_dump(), veiculos_data
-    )
-    return veiculo_validado
+@router.get("/{veiculo_id}", response_model=Veiculo)
+def buscar_veiculo(veiculo_id: int, session: Session = Depends(get_session)):
+    veiculo = session.get(Veiculo, veiculo_id)
+    if not veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    return veiculo
 
 
 @veiculos_router.get("/{id}", response_model=Veiculo)
-def buscar(id: str):
+def buscar(id: uuid.UUID):
     global veiculos_data
     veiculo = veiculos_data[veiculos_data["id"] == id]
     if veiculo.empty:
@@ -45,7 +39,7 @@ def buscar(id: str):
 
 
 @veiculos_router.put("/{id}", response_model=Veiculo)
-def atualizar(id: str, veiculo: Veiculo):
+def atualizar(id: uuid.UUID, veiculo: Veiculo):
     global veiculos_data
     elemento = veiculos_data[veiculos_data["id"] == id]
     if elemento.empty:
@@ -61,7 +55,7 @@ def atualizar(id: str, veiculo: Veiculo):
 
 
 @veiculos_router.delete("/{id}")
-def remover(id: str):
+def remover(id: uuid.UUID):
     global veiculos_data
     elemento = veiculos_data[veiculos_data["id"] == id]
     if elemento.empty:

@@ -1,15 +1,13 @@
 # Autor: Antonio Kleberson
-from pydantic import BaseModel, Field
-from typing import Optional, Union
+from sqlmodel import SQLModel, Field
 from datetime import date
-import uuid
 
 
-class Locacao(BaseModel):
-    id: Union[uuid.UUID, None] = None
+class Locacao(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     data_inicio: date
     data_fim: date
     valor_diaria: float
-    cliente_id: uuid.UUID
-    vendedor_id: uuid.UUID
-    veiculo_id: uuid.UUID
+    cliente_id: int
+    vendedor_id: int
+    veiculo_id: int

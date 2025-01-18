@@ -1,12 +1,15 @@
-id,usuario,senha,nome,telefone,funcao
-5e1e1777-e0ae-4d47-8b0c-1bb89e85691b,v_joao,senhaSegura123,João Vieira,(11) 98765-4321,vendedor
-5b409ffe-8cb2-43d1-8fac-39d37df663f1,maria_g,senhaForte456,Maria Gonçalves,(21) 91234-5678,gerente
-54c78785-ea66-471e-a2d4-0486b08396ff,carlos_s,senha2023!,Carlos Santos,(31) 99876-5432,admin
-3d3175e7-57f8-4313-847b-754f6fd5674f,ana_l,senhaAna123,Ana Lima,(41) 98765-4321,vendedor
-9e1198b0-8aa8-44f5-9308-92a5114988e7,lucas_m,senhaLucas789,Lucas Martins,(51) 91234-5678,gerente
-955bce4b-8316-4992-8556-d772cc36569f,fernanda_r,fernandaSenha!,Fernanda Ribeiro,(71) 99812-3456,vendedor
-d9b139d3-4582-477d-b6c7-9e1361151e8b,ricardo_a,senhaRicardo@2023,Ricardo Alves,(61) 98765-1234,admin
-ab656538-f4d3-4527-8825-f2ebb0dbd679,beatriz_c,senhaBea456,Beatriz Costa,(85) 99876-7890,vendedor
-10d65bab-5801-45d9-a3be-4ebd34c56c3a,fabio_t,fabioSenha!,Fábio Teixeira,(62) 91234-1234,gerente
-2c499c96-0ab6-4e2e-83e7-52b95e88b695,julia_p,senhaJulia2023,Julia Pereira,(13) 98765-9876,vendedor
-fe19d76b-7b21-4f36-90f2-5b526e6ba3b4,string,string,string,string,vendedor
+usuario,nome,id,funcao,telefone,senha
+v_joao,João Vieira,0,vendedor,(11) 98765-4321,senhaSegura123
+maria_g,Maria Gonçalves,1,gerente,(21) 91234-5678,senhaForte456
+carlos_s,Carlos Santos,2,admin,(31) 99876-5432,senha2023!
+ana_l,Ana Lima,3,vendedor,(41) 98765-4321,senhaAna123
+lucas_m,Lucas Martins,4,gerente,(51) 91234-5678,senhaLucas789
+fernanda_r,Fernanda Ribeiro,5,vendedor,(71) 99812-3456,fernandaSenha!
+ricardo_a,Ricardo Alves,6,admin,(61) 98765-1234,senhaRicardo@2023
+beatriz_c,Beatriz Costa,7,vendedor,(85) 99876-7890,senhaBea456
+fabio_t,Fábio Teixeira,8,gerente,(62) 91234-1234,fabioSenha!
+julia_p,Julia Pereira,9,vendedor,(13) 98765-9876,senhaJulia2023
+string,string,10,vendedor,string,string
+ssj,Goku da Silva,11,vendedor,(88)999990000,senha123
+string,string,12,vendedor,string,string
+marceludo,Marcelim,13,admin,(88)999999999,senhabastantesegura

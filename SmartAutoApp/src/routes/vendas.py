@@ -8,7 +8,7 @@ import uuid
 from models.venda import Venda
 from utils.file_handler import read_csv, append_csv
 
-vendas_router = APIRouter(prefix="/vendas", tags=["Vendas"])
+router = APIRouter(prefix="/vendas", tags=["Vendas"])
 file = "src/storage/vendas.csv"
 campos = [
     "id",
@@ -22,13 +22,13 @@ locacoes_data = read_csv(file)  # Carrega os dados do arquivo CSV
 
 
 @vendas_router.get("/")
-def listar():
+def litar():
     if locacoes_data.empty:
         return []
     return locacoes_data.to_dict(orient="records")
 
 
-@vendas_router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
+@router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
 def criar(venda: Venda):
     global locacoes_data
     if venda.id is None:
@@ -43,7 +43,7 @@ def criar(venda: Venda):
 
 
 @vendas_router.get("/{id}", response_model=Venda)
-def buscar(id: str):
+def buscar(id: uuid.UUID):
     global locacoes_data
     if locacoes_data.empty:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Lista Vazia")
@@ -56,7 +56,7 @@ def buscar(id: str):
 
 
 @vendas_router.put("/{id}", response_model=Venda)
-def atualizar(id: str, atualizado: Venda):
+def atualizar(id: uuid.UUID, atualizado: Venda):
     global locacoes_data
     if locacoes_data.empty:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Vazio.")
@@ -73,7 +73,7 @@ def atualizar(id: str, atualizado: Venda):
 
 
 @vendas_router.delete("/{id}")
-def remover(id: str):
+def remover(id: uuid.UUID):
     global locacoes_data
     if locacoes_data.empty:
         raise HTTPException(

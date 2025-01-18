@@ -6,3 +6,4 @@ __pycache__/
 .idea
 SmartAutoApp/src/storage/funcionarios.zip
 SmartAutoApp/ola.py
+.env
