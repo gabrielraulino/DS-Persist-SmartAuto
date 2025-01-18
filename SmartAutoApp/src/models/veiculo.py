@@ -8,6 +8,5 @@ class Veiculo(SQLModel, table=True):
     modelo: str
     ano: int
     preco: float
-    valor_diaria: float
     cor: str
     disponivel: bool

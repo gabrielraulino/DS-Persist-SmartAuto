@@ -2,93 +2,61 @@
 Autor : Gabriel Raulino
 """
 
-from http import HTTPStatus
-from fastapi import APIRouter, HTTPException
-import uuid
+from fastapi import APIRouter, HTTPException, Depends, Query
+from sqlmodel import Session, select
 from models.cliente import Cliente
-from utils.file_handler import read_csv, append_csv
-from utils.zip_handler import compactar_csv
-from utils.hash_handler import calcular_hash_sha256
+from database.database import get_session
 
 router = APIRouter(prefix="/clientes", tags=["Clientes"])
 campos = ["id", "nome", "telefone", "email", "endereco"]
 file = "src/storage/clientes.csv"
-clientes_data = read_csv(file)
 
 
-@router.get("/zip")
-def gerar_zip():
-    return compactar_csv(file)
+@router.get("/", response_model=list[Cliente])
+def listar_clientes(
+    offset: int = 0,
+    limit: int = Query(default=10, le=100),
+    session: Session = Depends(get_session),
+):
+    return session.exec(select(Cliente).offset(offset).limit(limit)).all()
 
 
-@router.get("/hash")
-def gerar_hash():
-    return {calcular_hash_sha256(file)}
+@router.get("/{cliente_id}", response_model=Cliente)
+def read_cliente(cliente_id: int, session: Session = Depends(get_session)):
+    cliente = session.get(Cliente, cliente_id)
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente not found")
+    return cliente
 
 
-@router.get("/qtd")
-def contar_elementos():
-    return {"quantidade de clientes no csv": len(clientes_data)}
+@router.post("/", response_model=Cliente)
+def create_cliente(cliente: Cliente, session: Session = Depends(get_session)):
+    session.add(cliente)
+    session.commit()
+    session.refresh(cliente)
+    return cliente
 
 
-@router.get("/", status_code=HTTPStatus.OK)
-def listar():
-    if clientes_data.empty:
-        return []
-    return clientes_data.to_dict(orient="records")
+@router.put("/{cliente_id}", response_model=Cliente)
+def update_cliente(
+    cliente_id: int, cliente: Cliente, session: Session = Depends(get_session)
+):
+    db_cliente = session.get(Cliente, cliente_id)
+    if not db_cliente:
+        raise HTTPException(status_code=404, detail="Cliente not found")
+    for key, value in cliente.model_dump(exclude_unset=True).items():
+        setattr(db_cliente, key, value)
+    session.add(db_cliente)
+    session.commit()
+    session.refresh(db_cliente)
+    return db_cliente
 
 
-@router.get("/{id}", response_model=Cliente)
-def buscar_funcionario(id: str):
-    global clientes_data
-    cliente = clientes_data[clientes_data["id"] == id]
-    if cliente.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
-        )
-    return cliente.to_dict(orient="records")[0]
-
-
-@router.post("/", response_model=Cliente, status_code=HTTPStatus.CREATED)
-def inserir(cliente: Cliente):
-    global clientes_data
-    if cliente.id is None:
-        cliente.id = uuid.uuid4()
-    elif not clientes_data[clientes_data["id"] == cliente.id].empty:
-        raise HTTPException(status_code=400, detail="ID já existe.")
-    cliente_validado = Cliente.model_validate(cliente)
-    clientes_data = append_csv(
-        file, campos, cliente_validado.model_dump(), clientes_data
-    )
-    if cliente.endereco.id == None:
-        cliente.endereco.id = uuid.uuid4()
-    return cliente_validado
-
-
-@router.put("/{id}", response_model=Cliente)
-def atualizar(id: uuid.UUID, cliente: Cliente):
-    global clientes_data
-    elemento = clientes_data[clientes_data["id"] == str(id)]
-    if elemento.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
-        )
-    if cliente.id is None:
-        cliente.id = id
-    cliente_validado = Cliente.model_validate(cliente)
-    clientes_data.loc[elemento.index[0]] = cliente_validado.model_dump()
-    clientes_data.to_csv(file, index=False)
-    return cliente_validado
-
-
-@router.delete("/{id}")
-def excluir(id: uuid.UUID):
-    global clientes_data
-    elemento = clientes_data[clientes_data["id"] == id]
-    if elemento.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Cliente não encontrado."
-        )
-    clientes_data = clientes_data.drop(elemento.index[0])
-    clientes_data.to_csv(file, index=False)
-    return {"detail": "Cliente excluído com sucesso"}
+@router.delete("/{cliente_id}")
+def delete_cliente(cliente_id: int, session: Session = Depends(get_session)):
+    cliente = session.get(Cliente, cliente_id)
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente not found")
+    session.delete(cliente)
+    session.commit()
+    return {"ok": True}

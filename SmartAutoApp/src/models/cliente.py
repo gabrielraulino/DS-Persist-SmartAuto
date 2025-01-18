@@ -2,7 +2,6 @@
 Autor: Gabriel Raulino
 """
 
-from typing import Union
 from sqlmodel import SQLModel, Field
 
 
@@ -18,4 +17,4 @@ class Cliente(SQLModel, table=True):
     uf: str
     cidade: str
     logradouro: str
-    numero: str
+    numero: int

@@ -24,7 +24,7 @@ def read_root():
 
 
 app.include_router(funcionarios.router)
+app.include_router(clientes.router)
 app.include_router(veiculos.router)
 app.include_router(locacoes.router)
-app.include_router(clientes.router)
 app.include_router(vendas.router)

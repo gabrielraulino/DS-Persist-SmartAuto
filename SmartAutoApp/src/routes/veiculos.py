@@ -1,74 +1,60 @@
-from fastapi import APIRouter, HTTPException
-from http import HTTPStatus
-import uuid
+from fastapi import APIRouter, HTTPException, Depends, Query
+from sqlmodel import Session, select
 from models.veiculo import Veiculo
-from utils.file_handler import read_csv, append_csv
+from database.database import get_session
 
 router = APIRouter(prefix="/veiculos", tags=["Veiculos"])
 file = "src/storage/veiculos.csv"
 campos = ["id", "marca", "modelo", "ano", "preco", "valor_diaria", "disponivel", "cor"]
 
-veiculos_data = read_csv(file)  # Carrega os dados do arquivo CSV
+
+@router.get("/", response_model=list[Veiculo])
+def listar_veiculos(
+    offset: int = 0,
+    limit: int = Query(default=10, le=100),
+    session: Session = Depends(get_session),
+    disponiveis: bool = True,
+):
+    if disponiveis:
+        return session.exec(select(Veiculo).offset(offset).limit(limit)).all()
 
 
-@router.get("/")
-def listar():
-    if veiculos_data.empty:
-        return []
-    return veiculos_data.to_dict(orient="records")
+@router.get("/{veiculo_id}", response_model=Veiculo)
+def buscar_veiculo(veiculo_id: int, session: Session = Depends(get_session)):
+    veiculo = session.get(Veiculo, veiculo_id)
+    if not veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    return veiculo
 
 
-@router.post("/", response_model=Veiculo, status_code=HTTPStatus.CREATED)
-def criar(veiculo: Veiculo):
-    global veiculos_data
-    if veiculo.id is None:
-        veiculo.id = uuid.uuid4()
-    elif not veiculos_data[veiculos_data["id"] == veiculo.id].empty:
-        raise HTTPException(status_code=400, detail="ID já existe.")
-    veiculo_validado = Veiculo.model_validate(veiculo)
-    veiculo_validado = Veiculo.par
-    veiculos_data = append_csv(
-        file, campos, veiculo_validado.model_dump(), veiculos_data
-    )
-    return veiculo_validado
+@router.post("/", response_model=Veiculo)
+def criar_veiculo(veiculo: Veiculo, session: Session = Depends(get_session)):
+    session.add(veiculo)
+    session.commit()
+    session.refresh(veiculo)
+    return veiculo
 
 
-@router.get("/{id}", response_model=Veiculo)
-def buscar(id: uuid.UUID):
-    global veiculos_data
-    veiculo = veiculos_data[veiculos_data["id"] == id]
-    if veiculo.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Veículo não encontrado."
-        )
-    return veiculo.to_dict(orient="records")[0]
+@router.put("/{veiculo_id}", response_model=Veiculo)
+def atualizar_veiculo(
+    veiculo_id: int, veiculo: Veiculo, session: Session = Depends(get_session)
+):
+    db_veiculo = session.get(Veiculo, veiculo_id)
+    if not db_veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    for key, value in veiculo.dict(exclude_unset=True).items():
+        setattr(db_veiculo, key, value)
+    session.add(db_veiculo)
+    session.commit()
+    session.refresh(db_veiculo)
+    return db_veiculo
 
 
-@router.put("/{id}", response_model=Veiculo)
-def atualizar(id: uuid.UUID, veiculo: Veiculo):
-    global veiculos_data
-    elemento = veiculos_data[veiculos_data["id"] == id]
-    if elemento.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Veículo não encontrado."
-        )
-    if veiculo.id is None:
-        veiculo.id = id
-    veiculo_validado = Veiculo.model_validate(veiculo)
-    veiculos_data.loc[elemento.index[0]] = veiculo_validado.model_dump()
-    veiculos_data.to_csv(file, index=False)
-    return veiculo_validado
-
-
-@router.delete("/{id}")
-def remover(id: uuid.UUID):
-    global veiculos_data
-    elemento = veiculos_data[veiculos_data["id"] == id]
-    if elemento.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Veículo não encontrado."
-        )
-    index = elemento.index[0]
-    veiculos_data = veiculos_data.drop(index)
-    veiculos_data.to_csv(file, index=False)
-    return {"detail": "Veículo excluído com sucesso"}
+@router.delete("/{veiculo_id}")
+def remover_veiculo(veiculo_id: int, session: Session = Depends(get_session)):
+    veiculo = session.get(Veiculo, veiculo_id)
+    if not veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    session.delete(veiculo)
+    session.commit()
+    return {"ok": True}
