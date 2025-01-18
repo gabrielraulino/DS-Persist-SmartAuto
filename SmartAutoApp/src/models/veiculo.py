@@ -1,3 +1,4 @@
+# Autor: Antonio Kleberson
 from typing import Union
 from sqlmodel import SQLModel, Field
 
