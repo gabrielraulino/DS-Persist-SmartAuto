@@ -7,7 +7,7 @@ from models.cliente import Cliente
 
 # from src.models.veiculo import Veiculo
 # from src.models.locacao import Locacao
-from src.models.venda import Venda
+from src.models.venda import VendaBase
 from datetime import date
 # import os
 

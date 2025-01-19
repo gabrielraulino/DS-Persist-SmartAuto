@@ -1,9 +1,9 @@
 # Autor: Antonio Kleberson
-from typing import Union
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
+from .venda import VendaBase
 
 
-class Veiculo(SQLModel, table=True):
+class VeiculoBase(SQLModel):
     id: int | None = Field(default=None, primary_key=True)
     marca: str
     modelo: str
@@ -11,3 +11,7 @@ class Veiculo(SQLModel, table=True):
     preco: float
     cor: str
     disponivel: bool
+
+class Veiculo(VeiculoBase, table=True):
+    venda_id: int = Field(foreign_key="venda.id")
+    venda: 'VendaBase' =  Relationship(back_populates="vendas")
