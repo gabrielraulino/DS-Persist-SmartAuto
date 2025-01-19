@@ -17,7 +17,10 @@ def listar_veiculos(
     disponiveis: bool = True,
 ):
     if disponiveis:
-        return session.exec(select(Veiculo).offset(offset).limit(limit)).all()
+        return session.exec(select(Veiculo).where(Veiculo.disponivel).offset(offset).limit(limit)).all()
+    
+    return session.exec(select(Veiculo).offset(offset).limit(limit)).all()
+    
 
 
 @router.get("/{veiculo_id}", response_model=Veiculo)

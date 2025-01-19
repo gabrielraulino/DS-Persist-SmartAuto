@@ -57,13 +57,15 @@ def read_cliente(cliente_id: int, session: Session = Depends(get_session)):
 
 @router.put("/{id}", response_model=Cliente)
 def update_cliente(
-    cliente_id: int, nome: str,
+    cliente_id: int,
+    nome: str,
     telefone: str,
     email: str,
     uf: str,
     cidade: str,
     logradouro: str,
-    numero: int, session: Session = Depends(get_session)
+    numero: int,
+    session: Session = Depends(get_session),
 ):
     db_cliente = session.get(Cliente, cliente_id)
     if not db_cliente:

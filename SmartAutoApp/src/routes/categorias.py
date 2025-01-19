@@ -2,13 +2,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlmodel import select
-from models import Categoria
-from database import get_session
+from models.categoria import Categoria
+from database.database import get_session
 
 # Vendas Routes (Atualizar)
 # Veiculos Routes (Consultas)
 
-router = APIRouter()
+router = APIRouter(prefix="/categorias", tags=["Categorias"])
+
 
 @router.get("/", response_model=list[Categoria])
 def listar_categorias(
@@ -18,6 +19,7 @@ def listar_categorias(
 ):
     return session.exec(select(Categoria).offset(offset).limit(limit)).all()
 
+
 @router.get("/{categoria_id}", response_model=Categoria)
 def read_categoria(categoria_id: int, session: Session = Depends(get_session)):
     categoria = session.get(Categoria, categoria_id)
@@ -25,17 +27,19 @@ def read_categoria(categoria_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Categoria not found")
     return categoria.model_dump()
 
+
 @router.post("/", response_model=Categoria)
 def create_categoria(
     nome: str,
     descricao: str,
     session: Session = Depends(get_session),
 ):
-    categoria = Categoria(nome=nome, descricao=descricao)
+    categoria = Categoria(nome=nome, desc=descricao)
     session.add(categoria)
     session.commit()
     session.refresh(categoria)
     return categoria.model_dump()
+
 
 @router.put("/{categoria_id}", response_model=Categoria)
 def update_categoria(
@@ -50,6 +54,7 @@ def update_categoria(
     session.commit()
     session.refresh(db_categoria)
     return db_categoria.model_dump()
+
 
 @router.delete("/{categoria_id}")
 def delete_categoria(categoria_id: int, session: Session = Depends(get_session)):

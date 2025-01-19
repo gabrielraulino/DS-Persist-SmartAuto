@@ -1,4 +1,3 @@
-from typing import Optional
 from fastapi import APIRouter, HTTPException
 from http import HTTPStatus
 from models.funcionario import Funcionario, Role
@@ -50,13 +49,13 @@ def read(user_id: int, session: Session = Depends(get_session)):
 
 @router.get("/{nome}", response_model=list[Funcionario])
 def search_by_name(nome: str, session: Session = Depends(get_session)):
-
     funcionarios = session.exec(
         select(Funcionario).where(Funcionario.nome.like(f"%{nome}%"))
     ).all()
     if not funcionarios:
         raise HTTPException(status_code=404, detail="Funcionario not found")
     return funcionarios
+
 
 @router.get("/role/{funcao}", response_model=list[Funcionario])
 def search_by_role(funcao: Role, session: Session = Depends(get_session)):
@@ -66,7 +65,6 @@ def search_by_role(funcao: Role, session: Session = Depends(get_session)):
     if not funcionarios:
         raise HTTPException(status_code=404, detail="Funcionario not found")
     return funcionarios
-
 
 
 @router.put("/{id}", response_model=Funcionario)
