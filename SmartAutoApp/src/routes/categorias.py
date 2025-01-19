@@ -5,8 +5,6 @@ from sqlmodel import select
 from models.categoria import Categoria
 from database.database import get_session
 
-# Vendas Routes (Atualizar)
-# Veiculos Routes (Consultas)
 
 router = APIRouter(prefix="/categorias", tags=["Categorias"])
 
