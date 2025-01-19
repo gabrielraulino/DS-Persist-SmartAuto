@@ -1,8 +1,7 @@
 """
-Autor: Gabriel Raulino
+Autor: Antonio Kleberson
 """
 
-import uuid
 from fastapi import APIRouter, HTTPException, Depends, Query
 from http import HTTPStatus
 from sqlmodel import Session, select
@@ -11,24 +10,14 @@ from models.venda import Venda, VendaCreate, VendaUpdate
 from typing import List
 
 router = APIRouter(prefix="/vendas", tags=["Vendas"])
-file = "src/storage/vendas.csv"
-campos = [
-    "id",
-    "valor",
-    "cliente_id",
-    "vendedor_id",
-    "veiculo_id",
-]
 
-locacoes_data = read_csv(file)  # Carrega os dados do arquivo CSV
-
-
-@router.get("/")
-def litar():
-    if locacoes_data.empty:
-        return []
-    return locacoes_data.to_dict(orient="records")
-
+@router.get("/", response_model=List[Venda])
+def listar_vendas(
+    offset: int = 0,
+    limit: int = Query(default=10, le=100),
+    session: Session = Depends(get_session),
+):
+    return session.exec(select(Venda).offset(offset).limit(limit)).all()
 
 @router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
 def criar_venda(venda: VendaCreate, session: Session = Depends(get_session)):
@@ -39,47 +28,29 @@ def criar_venda(venda: VendaCreate, session: Session = Depends(get_session)):
     return nova_venda.model_dump()
 
 @router.get("/{id}", response_model=Venda)
-def buscar(id: uuid.UUID):
-    global locacoes_data
-    if locacoes_data.empty:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Lista Vazia")
-    venda = locacoes_data[locacoes_data["id"] == str(id)]
-    if venda.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Locação não encontrada."
-        )
-    return venda.to_dict(orient="records")[0]
-
+def buscar_venda(id: int, session: Session = Depends(get_session)):
+    venda = session.get(Venda, id)
+    if not venda:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada.")
+    return venda.model_dump()
 
 @router.put("/{id}", response_model=Venda)
-def atualizar(id: uuid.UUID, atualizado: Venda):
-    global locacoes_data
-    if locacoes_data.empty:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Vazio.")
-    if atualizado.id == None:
-        atualizado.id = id
-    venda = locacoes_data[locacoes_data["id"] == str(id)]
-    if venda.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
-        )
-    locacoes_data.loc[venda.index[0]] = atualizado.model_dump()
-    locacoes_data.to_csv(file, index=False)
-    return atualizado
-
+def atualizar_venda(id: int, venda: VendaUpdate, session: Session = Depends(get_session)):
+    db_venda = session.get(Venda, id)
+    if not db_venda:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada.")
+    for key, value in venda.dict(exclude_unset=True).items():
+        setattr(db_venda, key, value)
+    session.add(db_venda)
+    session.commit()
+    session.refresh(db_venda)
+    return db_venda.model_dump()
 
 @router.delete("/{id}")
-def remover(id: uuid.UUID):
-    global locacoes_data
-    if locacoes_data.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Não existe nenhuma Venda."
-        )
-    venda = locacoes_data[locacoes_data["id"] == str(id)]
-    if venda.empty:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
-        )
-    locacoes_data = locacoes_data.drop(venda.index[0])
-    locacoes_data.to_csv(file, index=False)
-    return {"Venda apaga com sucesso"}
+def remover_venda(id: int, session: Session = Depends(get_session)):
+    db_venda = session.get(Venda, id)
+    if not db_venda:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada.")
+    session.delete(db_venda)
+    session.commit()
+    return {"detail": "Venda apagada com sucesso"}
