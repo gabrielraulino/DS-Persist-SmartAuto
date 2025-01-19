@@ -1,4 +1,4 @@
-# Autor: Gabriel Raulino
+# Autor: Antonio Kleberson
 from typing import TYPE_CHECKING, Union
 from sqlmodel import Relationship, SQLModel, Field
 from datetime import date
