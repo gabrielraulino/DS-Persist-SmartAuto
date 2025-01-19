@@ -1,8 +1,12 @@
 # Autor: Gabriel Raulino
-from typing import Union
-from sqlmodel import SQLModel, Field
+from typing import TYPE_CHECKING, Union
+from sqlmodel import Relationship, SQLModel, Field
 from datetime import date
 
+#Relacionamento com cliente
+
+if TYPE_CHECKING:
+    from .cliente import Cliente
 
 class Venda(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -11,3 +15,4 @@ class Venda(SQLModel, table=True):
     vendedor_id: int
     cliente_id: int
     veiculo_id: int
+    cliente: "Cliente" = Relationship(back_populates="vendas")
