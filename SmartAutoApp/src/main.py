@@ -1,5 +1,5 @@
 """
-Autores : Gabriel Raulino, Antonio Kleberson 
+Autores : Gabriel Raulino, Antonio Kleberson
 """
 
 # imports do fastAPI

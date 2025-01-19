@@ -7,3 +7,4 @@ __pycache__/
 SmartAutoApp/src/storage/funcionarios.zip
 SmartAutoApp/ola.py
 .env
+*.sql
