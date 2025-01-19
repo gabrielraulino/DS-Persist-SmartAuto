@@ -1,3 +1,4 @@
+# Autor: Antonio Kleberson
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from models.veiculo import Veiculo
