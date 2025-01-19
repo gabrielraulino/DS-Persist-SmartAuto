@@ -2,6 +2,7 @@
 Autor: Gabriel Raulino
 """
 
+import uuid
 from fastapi import APIRouter, HTTPException, Depends, Query
 from http import HTTPStatus
 from sqlmodel import Session, select
