@@ -13,6 +13,6 @@ class Venda(SQLModel, table=True):
     data: Union[date, None] = None
     valor: float
     vendedor_id: int
-    cliente_id: int
     veiculo_id: int
+    cliente_id: int = Field(foreign_key="cliente.id")
     cliente: "Cliente" = Relationship(back_populates="vendas")
