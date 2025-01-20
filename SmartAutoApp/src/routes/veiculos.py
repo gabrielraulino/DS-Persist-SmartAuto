@@ -1,7 +1,8 @@
 # Autor: Antonio Kleberson
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
-from models.veiculo import Veiculo
+from models.veiculo import Veiculo, CategoriaVeiculo
+from models.categoria import Categoria
 from database.database import get_session
 
 router = APIRouter(prefix="/veiculos", tags=["Veiculos"])
@@ -81,3 +82,20 @@ def listar_veiculos_por_ano(ano: int, session: Session = Depends(get_session)):
 @router.get("/modelo/{modelo}", response_model=list[Veiculo])
 def listar_veiculos_por_modelo(modelo: str, session: Session = Depends(get_session)):
     return session.exec(select(Veiculo).where(Veiculo.modelo == modelo)).all()
+@router.post("/{post_id}/tags/", response_model=Categoria)
+def categoria_para_veiculos(
+    veiculo_id: int, nome_categoria: str, descricao: str = None, session: Session = Depends(get_session)
+):
+    categoria_db = session.exec(select(Categoria).where(Categoria.nome == nome_categoria)).first()
+    if categoria_db:
+        categoria = categoria_db
+    else:
+        categoria = Categoria(nome= nome_categoria, desc=descricao)
+        session.add(categoria)
+        session.commit()
+        session.refresh(categoria)
+    categoria_dump = categoria.model_dump()
+    post_tag = CategoriaVeiculo(veiculo_id=veiculo_id, categoria_id= categoria_db.id)
+    session.add(post_tag)
+    session.commit()
+    return categoria_dump
