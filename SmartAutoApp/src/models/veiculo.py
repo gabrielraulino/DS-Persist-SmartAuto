@@ -9,8 +9,8 @@ from enum import Enum
 
 
 class Ordem(str, Enum):
-    ASC = "asc"
-    DESC = "desc"
+    ASC: str = "asc"
+    DESC: str = "desc"
 
 
 class CategoriaVeiculo(SQLModel, table=True):

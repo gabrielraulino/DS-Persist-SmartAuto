@@ -4,6 +4,7 @@ Autor: Antonio Kleberson
 
 from fastapi import APIRouter, HTTPException, Depends, Query
 from http import HTTPStatus
+from sqlalchemy import text
 from sqlmodel import Session, select
 from database.database import get_session
 from models.cliente import Cliente
@@ -24,10 +25,13 @@ def listar_vendas(
     session: Session = Depends(get_session),
     ordem: Ordem = Ordem.DESC,
 ):
-    if ordem == None:
-        vendas = session.exec(select(Venda).offset(offset).limit(limit)).all()
-        return vendas
-    vendas = session.exec(select(Venda).order_by(Venda.valor, ordem).offset(offset).limit(limit)).all()
+    vendas = session.exec(
+        select(Venda)
+        .order_by(text(f"venda.valor {ordem.name }"))
+        .offset(offset)
+        .limit(limit)
+    ).all()
+    return vendas
 
 
 @router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
