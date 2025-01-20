@@ -24,8 +24,10 @@ def listar_vendas(
     session: Session = Depends(get_session),
     ordem: Ordem = Ordem.DESC,
 ):
-    vendas = session.exec(select(Venda).offset(offset).limit(limit)).all()
-    return vendas
+    if ordem == None:
+        vendas = session.exec(select(Venda).offset(offset).limit(limit)).all()
+        return vendas
+    vendas = session.exec(select(Venda).order_by(Venda.valor, ordem).offset(offset).limit(limit)).all()
 
 
 @router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
