@@ -5,6 +5,13 @@ if TYPE_CHECKING:
     from models.venda import Venda
     from .categoria import Categoria
 
+from enum import Enum
+
+
+class Ordem(str, Enum):
+    ASC = "asc"
+    DESC = "desc"
+
 
 class CategoriaVeiculo(SQLModel, table=True):
     categoria_id: int = Field(

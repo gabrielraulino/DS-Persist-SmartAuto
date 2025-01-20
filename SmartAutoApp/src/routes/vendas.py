@@ -8,10 +8,11 @@ from sqlmodel import Session, select
 from database.database import get_session
 from models.cliente import Cliente
 from models.funcionario import Funcionario
-from models.veiculo import Veiculo
+from models.veiculo import Veiculo, Ordem
 from models.venda import Venda, VendaComplexa
 from datetime import date
 from typing import List
+
 
 router = APIRouter(prefix="/vendas", tags=["Vendas"])
 
@@ -21,6 +22,7 @@ def listar_vendas(
     offset: int = 0,
     limit: int = Query(default=10, le=100),
     session: Session = Depends(get_session),
+    ordem: Ordem = Ordem.DESC,
 ):
     vendas = session.exec(select(Venda).offset(offset).limit(limit)).all()
     return vendas

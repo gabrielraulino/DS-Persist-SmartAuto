@@ -1,5 +1,4 @@
 # Autor: Antonio Kleberson
-from enum import Enum
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from models.categoria import Categoria
@@ -17,11 +16,6 @@ def criar_veiculo(veiculo: Veiculo, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(veiculo)
     return veiculo
-
-
-class Ordem(str, Enum):
-    ASC = "asc"
-    DESC = "desc"
 
 
 @router.get("/", response_model=list[Veiculo])
