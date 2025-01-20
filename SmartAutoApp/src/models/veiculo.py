@@ -1,9 +1,8 @@
-# Autor: Antonio Kleberson
+from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-from .venda import VendaBase
-
-
-class VeiculoBase(SQLModel):
+if TYPE_CHECKING:
+    from .categoria import Categoria
+class Veiculo(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     marca: str
     modelo: str
@@ -11,7 +10,5 @@ class VeiculoBase(SQLModel):
     preco: float
     cor: str
     disponivel: bool
-
-class Veiculo(VeiculoBase, table=True):
-    venda_id: int = Field(foreign_key="venda.id")
-    venda: 'VendaBase' =  Relationship(back_populates="vendas")
+    categoria_id: int = Field(foreign_key="categoria.id")
+    categoria: Optional["Categoria"] = Relationship(back_populates="veiculos")

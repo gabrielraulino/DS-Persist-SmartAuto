@@ -1,16 +1,19 @@
 # Autor: Gabriel Raulino
-from typing import Union
-from sqlmodel import Relationship, SQLModel, Field
+from typing import Optional, Union, TYPE_CHECKING
+from sqlmodel import SQLModel, Field, Relationship
 from datetime import date
-from .veiculo import VeiculoBase
-
-
+if TYPE_CHECKING:
+    from .cliente import Cliente
+    from .funcionario import Funcionario
 class VendaBase(SQLModel):
-    id: int | None = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     data: Union[date, None] = None
     valor: float
-    vendedor_id: int
-    cliente_id: int
-
-class VendaBase(VendaBase, table=True):
-    veiculos: list[VeiculoBase] = Relationship(back_populates="venda")
+    vendedor_id: int = Field(foreign_key="funcionario.id")
+    cliente_id: int = Field(foreign_key="cliente.id")
+class Venda(VendaBase, table=True):
+    vendedor: Optional["Funcionario"] = Relationship(back_populates="vendas")
+    cliente: Optional["Cliente"] = Relationship(back_populates="vendas")
+# Importação atrasada para evitar importação circular
+from .funcionario import Funcionario
+from .cliente import Cliente
