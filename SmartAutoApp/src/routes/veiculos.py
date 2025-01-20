@@ -62,3 +62,22 @@ def remover_veiculo(veiculo_id: int, session: Session = Depends(get_session)):
     session.delete(veiculo)
     session.commit()
     return {"ok": True}
+
+@router.get("/categoria/{categoria}", response_model=list[Veiculo])
+def listar_veiculos_por_categoria(categoria: str, session: Session = Depends(get_session)):
+    return session.exec(select(Veiculo).where(Veiculo.categoria == categoria)).all()
+
+
+@router.get("/preco/", response_model=list[Veiculo])
+def listar_veiculos_por_preco(min_preco: float = 0, max_preco: float = Query(default=1000000), session: Session = Depends(get_session)):
+    return session.exec(select(Veiculo).where(Veiculo.preco.between(min_preco, max_preco))).all()
+
+
+@router.get("/ano/{ano}", response_model=list[Veiculo])
+def listar_veiculos_por_ano(ano: int, session: Session = Depends(get_session)):
+    return session.exec(select(Veiculo).where(Veiculo.ano == ano)).all()
+
+
+@router.get("/modelo/{modelo}", response_model=list[Veiculo])
+def listar_veiculos_por_modelo(modelo: str, session: Session = Depends(get_session)):
+    return session.exec(select(Veiculo).where(Veiculo.modelo == modelo)).all()
