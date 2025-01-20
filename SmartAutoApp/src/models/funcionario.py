@@ -1,25 +1,25 @@
-"""
-Autor: Gabriel Raulino
-"""
-
+# Autor: Gabriel Raulino
+from typing import Optional, List, TYPE_CHECKING
+from sqlmodel import SQLModel, Field, Relationship
 from enum import Enum
-from sqlmodel import SQLModel, Field
 
+if TYPE_CHECKING:
+    from .venda import Venda
 
 class Role(str, Enum):
     VENDEDOR = "vendedor"
     GERENTE = "gerente"
     ADMIN = "admin"
 
-
-class Funcionario(SQLModel, table=True):
-    """
-    Autor: Gabriel Raulino
-    """
-
-    id: int | None = Field(default=None, primary_key=True)
+class FuncionarioBase(SQLModel):
+    id: Optional[int] = Field(default=None, primary_key=True)
     usuario: str
     senha: str
     nome: str
     telefone: str
     funcao: Role
+class Funcionario(FuncionarioBase, table=True):
+    vendas: List["Venda"] = Relationship(back_populates="vendedor")
+
+# Importação atrasada para evitar importação circular
+from .venda import Venda

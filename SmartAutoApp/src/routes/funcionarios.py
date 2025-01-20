@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from http import HTTPStatus
-from models.funcionario import Funcionario, Role
+from models.funcionario import FuncionarioBase, Role
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from sqlalchemy.orm import joinedload
-from models.funcionario import Funcionario
+from models.funcionario import FuncionarioBase, Funcionario
 from database.database import get_session
 
 router = APIRouter(prefix="/funcionarios", tags=["Funcionarios"])
