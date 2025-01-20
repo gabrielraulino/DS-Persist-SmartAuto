@@ -66,7 +66,9 @@ def remover_veiculo(veiculo_id: int, session: Session = Depends(get_session)):
 
 @router.get("/categoria/{categoria}", response_model=list[Veiculo])
 def listar_veiculos_por_categoria(categoria: str, session: Session = Depends(get_session)):
-    return session.exec(select(Veiculo).where(Veiculo.categoria == categoria)).all()
+    return session.exec(
+        select(Veiculo).join(CategoriaVeiculo).join(Categoria).where(Categoria.nome == categoria)
+    ).all()
 
 
 @router.get("/preco/", response_model=list[Veiculo])
@@ -82,6 +84,8 @@ def listar_veiculos_por_ano(ano: int, session: Session = Depends(get_session)):
 @router.get("/modelo/{modelo}", response_model=list[Veiculo])
 def listar_veiculos_por_modelo(modelo: str, session: Session = Depends(get_session)):
     return session.exec(select(Veiculo).where(Veiculo.modelo == modelo)).all()
+
+
 @router.post("/{post_id}/tags/", response_model=Categoria)
 def categoria_para_veiculos(
     veiculo_id: int, nome_categoria: str, descricao: str = None, session: Session = Depends(get_session)
@@ -95,7 +99,7 @@ def categoria_para_veiculos(
         session.commit()
         session.refresh(categoria)
     categoria_dump = categoria.model_dump()
-    post_tag = CategoriaVeiculo(veiculo_id=veiculo_id, categoria_id= categoria_db.id)
+    post_tag = CategoriaVeiculo(veiculo_id=veiculo_id, categoria_id= categoria.id)
     session.add(post_tag)
     session.commit()
     return categoria_dump
