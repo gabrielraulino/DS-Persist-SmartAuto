@@ -8,21 +8,22 @@ from sqlmodel import Session, select
 from database.database import get_session
 from models.cliente import Cliente
 from models.funcionario import Funcionario
-from models.venda import Venda
 from models.veiculo import Veiculo
+from models.venda import Venda, VendaComplexa
 from datetime import date
 from typing import List
 
 router = APIRouter(prefix="/vendas", tags=["Vendas"])
 
 
-@router.get("/", response_model=List[Venda])
+@router.get("/", response_model=list[VendaComplexa])
 def listar_vendas(
     offset: int = 0,
     limit: int = Query(default=10, le=100),
     session: Session = Depends(get_session),
 ):
-    return session.exec(select(Venda).offset(offset).limit(limit)).all()
+    vendas = session.exec(select(Venda).offset(offset).limit(limit)).all()
+    return vendas
 
 
 @router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
@@ -33,19 +34,32 @@ def criar_venda(
     data: date = date.today(),
     session: Session = Depends(get_session),
 ):
-    veiculo = session.get(Veiculo, veiculo_id)
+    veiculo = session.exec(
+        select(Veiculo).where(Veiculo.id == veiculo_id and Veiculo.disponivel)
+    ).one_or_none()
     if not veiculo:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
-    
-    vendedor = session.get(Funcionario, vendedor_id)
+
+    vendedor = session.exec(
+        select(Funcionario).where(Funcionario.id == vendedor_id)
+    ).one_or_none()
     if not vendedor:
         raise HTTPException(status_code=404, detail="Vendedor não encontrado")
-    
-    cliente = session.get(Cliente, cliente_id)
+
+    cliente = session.exec(
+        select(Cliente).where(Cliente.id == cliente_id)
+    ).one_or_none()
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
-    
-    venda = Venda(data=data, valor=veiculo.preco, vendedor_id=vendedor_id, cliente_id=cliente_id, veiculo_id=veiculo_id)
+
+    venda = Venda(
+        data=data,
+        valor=veiculo.preco,
+        vendedor_id=vendedor_id,
+        cliente_id=cliente_id,
+        veiculo_id=veiculo_id,
+    )
+    setattr(veiculo, "disponivel", False)
     session.add(venda)
     session.commit()
     session.refresh(venda)
@@ -99,7 +113,9 @@ def listar_vendas_por_valor_minimo(
     """
     vendas = session.exec(select(Venda).where(Venda.valor >= valor_minimo)).all()
     if not vendas:
-        raise HTTPException(status_code=404, detail="Nenhuma venda encontrada com o valor especificado")        
+        raise HTTPException(
+            status_code=404, detail="Nenhuma venda encontrada com o valor especificado"
+        )
     return vendas
 
 
@@ -112,7 +128,11 @@ def listar_vendas_por_data(
     """
     Retorna todas as vendas realizadas entre as datas especificadas.
     """
-    vendas = session.exec(select(Venda).where(Venda.data.between(data_inicial, data_final))).all()
+    vendas = session.exec(
+        select(Venda).where(Venda.data.between(data_inicial, data_final))
+    ).all()
     if not vendas:
-        raise HTTPException(status_code=404, detail="Nenhuma venda encontrada no período especificado")
+        raise HTTPException(
+            status_code=404, detail="Nenhuma venda encontrada no período especificado"
+        )
     return vendas

@@ -102,11 +102,13 @@ def delete_cliente(cliente_id: int, session: Session = Depends(get_session)):
     return {"ok": True}
 
 
-@router.get("/{cliente_id}/vendas")
+@router.get("/{cliente_id}/vendas", response_model=list[Venda])
 def listar_vendas_cliente(cliente_id: int, session: Session = Depends(get_session)):
-    cliente = session.get(Cliente, cliente_id)
-    if not cliente:
+    cliente = session.exec(
+        select(Cliente.id).where(Cliente.id == cliente_id)
+    ).one_or_none()
+    if cliente == None:
         raise HTTPException(status_code=404, detail="Cliente not found")
-        
+
     vendas = session.exec(select(Venda).where(Venda.cliente_id == cliente_id)).all()
     return vendas
