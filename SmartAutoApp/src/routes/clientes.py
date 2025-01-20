@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from models.cliente import Cliente
 from database.database import get_session
+from models.venda import Venda
 
 if TYPE_CHECKING:
     from models.venda import Venda

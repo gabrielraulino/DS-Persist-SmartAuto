@@ -6,6 +6,8 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from http import HTTPStatus
 from sqlmodel import Session, select
 from database.database import get_session
+from models.cliente import Cliente
+from models.funcionario import Funcionario
 from models.venda import Venda
 from models.veiculo import Veiculo
 from datetime import date
@@ -31,20 +33,23 @@ def criar_venda(
     data: date = date.today(),
     session: Session = Depends(get_session),
 ):
-    veiculo = session.exec(select(Veiculo).where(Veiculo.disponivel and Veiculo.id == veiculo_id)).one()
-    if not veiculo: 
-          raise HTTPException(status_code=404, detail="Veículo não encontrado")
-    setattr(veiculo, "disponivel", False)
-    nova_venda = Venda(
-    valor= veiculo.preco,
-    vendedor_id= vendedor_id,
-    cliente_id= cliente_id,
-    veiculo_id= veiculo_id,
-    data= data)
-    session.add(nova_venda)
+    veiculo = session.get(Veiculo, veiculo_id)
+    if not veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    
+    vendedor = session.get(Funcionario, vendedor_id)
+    if not vendedor:
+        raise HTTPException(status_code=404, detail="Vendedor não encontrado")
+    
+    cliente = session.get(Cliente, cliente_id)
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    
+    venda = Venda(data=data, valor=veiculo.preco, vendedor_id=vendedor_id, cliente_id=cliente_id, veiculo_id=veiculo_id)
+    session.add(venda)
     session.commit()
-    session.refresh(nova_venda)
-    return nova_venda.model_dump()
+    session.refresh(venda)
+    return venda
 
 
 @router.get("/{id}", response_model=Venda)

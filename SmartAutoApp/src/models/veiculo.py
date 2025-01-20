@@ -1,6 +1,8 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
+
 if TYPE_CHECKING:
+    from models.venda import Venda
     from .categoria import Categoria
 
 class CategoriaVeiculo(SQLModel, table=True):
@@ -17,6 +19,7 @@ class VeiculoBase(SQLModel):
 
 class Veiculo(VeiculoBase, table=True):
     categorias: list["Categoria"] = Relationship(link_model=CategoriaVeiculo)
+    vendas: List["Venda"] = Relationship(back_populates="veiculo")
 
 class VeiculoComCategorias(VeiculoBase):
     categorias: list["Categoria"] = []
