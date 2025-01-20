@@ -82,3 +82,32 @@ def remover_venda(id: int, session: Session = Depends(get_session)):
     session.delete(db_venda)
     session.commit()
     return {"detail": "Venda apagada com sucesso"}
+
+
+@router.get("/valor_minimo/", response_model=List[Venda])
+def listar_vendas_por_valor_minimo(
+    valor_minimo: float,
+    session: Session = Depends(get_session),
+):
+    """
+    Retorna todas as vendas com valor maior ou igual ao valor mínimo especificado.
+    """
+    vendas = session.exec(select(Venda).where(Venda.valor >= valor_minimo)).all()
+    if not vendas:
+        raise HTTPException(status_code=404, detail="Nenhuma venda encontrada com o valor especificado")        
+    return vendas
+
+
+@router.get("/data/", response_model=List[Venda])
+def listar_vendas_por_data(
+    data_inicial: date,
+    data_final: date,
+    session: Session = Depends(get_session),
+):
+    """
+    Retorna todas as vendas realizadas entre as datas especificadas.
+    """
+    vendas = session.exec(select(Venda).where(Venda.data.between(data_inicial, data_final))).all()
+    if not vendas:
+        raise HTTPException(status_code=404, detail="Nenhuma venda encontrada no período especificado")
+    return vendas
