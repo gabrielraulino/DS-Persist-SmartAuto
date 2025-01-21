@@ -1,8 +1,4 @@
-from typing import TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
-
-if TYPE_CHECKING:
-    from .veiculo import Veiculo
+from sqlmodel import SQLModel, Field
 
 
 class Categoria(SQLModel, table=True):

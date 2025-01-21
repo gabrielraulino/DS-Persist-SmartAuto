@@ -1,8 +1,4 @@
-from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-
-if TYPE_CHECKING:
-    from .venda import Venda
 
 
 class ClienteBase(SQLModel):
