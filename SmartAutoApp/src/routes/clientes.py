@@ -1,11 +1,16 @@
 """
-Autor : Gabriel Raulino
+Autor : Gabriel Raulino, Antonio Kleberson
 """
 
+from typing import TYPE_CHECKING
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from models.cliente import Cliente
 from database.database import get_session
+from models.venda import Venda
+
+if TYPE_CHECKING:
+    from models.venda import Venda
 
 router = APIRouter(prefix="/clientes", tags=["Clientes"])
 campos = ["id", "nome", "telefone", "email", "endereco"]
@@ -95,3 +100,15 @@ def delete_cliente(cliente_id: int, session: Session = Depends(get_session)):
     session.delete(cliente)
     session.commit()
     return {"ok": True}
+
+
+@router.get("/{cliente_id}/vendas", response_model=list[Venda])
+def listar_vendas_cliente(cliente_id: int, session: Session = Depends(get_session)):
+    cliente = session.exec(
+        select(Cliente.id).where(Cliente.id == cliente_id)
+    ).one_or_none()
+    if cliente == None:
+        raise HTTPException(status_code=404, detail="Cliente not found")
+
+    vendas = session.exec(select(Venda).where(Venda.cliente_id == cliente_id)).all()
+    return vendas
