@@ -1,4 +1,5 @@
 # Autor: Gabriel Raulino
+from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from enum import Enum
 

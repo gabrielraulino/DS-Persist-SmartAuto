@@ -34,10 +34,11 @@ def listar_vendas(
     return vendas
 
 
-@router.post("/", response_model=VendaBase, status_code=HTTPStatus.CREATED)
+@router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
 def criar_venda(
     vendedor_id: int,
     cliente_id: int,
+    veiculo_id: id,
     data: date = date.today(),
     session: Session = Depends(get_session),
 ):
@@ -73,9 +74,9 @@ def criar_venda(
     return venda
 
 
-@router.get("/{id}", response_model=VendaBase)
+@router.get("/{id}", response_model=Venda)
 def buscar_venda(id: int, session: Session = Depends(get_session)):
-    venda = session.get(VendaBase, id)
+    venda = session.get(Venda, id)
     if not venda:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
@@ -83,9 +84,9 @@ def buscar_venda(id: int, session: Session = Depends(get_session)):
     return venda.model_dump()
 
 
-@router.put("/{id}", response_model=VendaBase)
-def atualizar_venda(id: int, venda: VendaBase, session: Session = Depends(get_session)):
-    db_venda = session.get(VendaBase, id)
+@router.put("/{id}", response_model=Venda)
+def atualizar_venda(id: int, venda: Venda, session: Session = Depends(get_session)):
+    db_venda = session.get(Venda, id)
     if not db_venda:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
@@ -100,7 +101,7 @@ def atualizar_venda(id: int, venda: VendaBase, session: Session = Depends(get_se
 
 @router.delete("/{id}")
 def remover_venda(id: int, session: Session = Depends(get_session)):
-    db_venda = session.get(VendaBase, id)
+    db_venda = session.get(Venda, id)
     if not db_venda:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Venda não encontrada."
