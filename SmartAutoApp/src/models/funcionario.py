@@ -24,6 +24,8 @@ class FuncionarioBase(SQLModel):
 
 class Funcionario(FuncionarioBase, table=True):
     vendas: list["Venda"] = Relationship(back_populates="vendedor")
+    locacoes: list["Locacao"] = Relationship(back_populates="vendedor")
 
 
 from .venda import Venda
+from .locacao import Locacao

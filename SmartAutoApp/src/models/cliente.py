@@ -22,6 +22,7 @@ class ClienteBase(SQLModel):
 
 class Cliente(ClienteBase, table=True):
     vendas: list["Venda"] = Relationship(back_populates="cliente")
+    locacoes: list["Locacao"] = Relationship(back_populates="cliente")
 
 
 class ClienteComVendas(ClienteBase):
@@ -29,3 +30,4 @@ class ClienteComVendas(ClienteBase):
 
 
 from .venda import Venda
+from .locacao import Locacao

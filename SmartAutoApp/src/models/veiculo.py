@@ -1,9 +1,5 @@
-from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 
-if TYPE_CHECKING:
-    from models.venda import Venda
-    from .categoria import Categoria
 
 from enum import Enum
 
@@ -31,9 +27,16 @@ class VeiculoBase(SQLModel):
 
 
 class Veiculo(VeiculoBase, table=True):
+    venda_id: int | None = Field(default=None, foreign_key="venda.id")
     categorias: list["Categoria"] = Relationship(link_model=CategoriaVeiculo)
-    vendas: list["Venda"] = Relationship(back_populates="veiculo")
+    venda: "Venda" = Relationship(back_populates="veiculos")
+    locacoes: list["Locacao"] = Relationship(back_populates="veiculo")
 
 
 class VeiculoComCategorias(VeiculoBase):
     categorias: list["Categoria"] = []
+
+
+from models.categoria import Categoria
+from models.venda import Venda
+from models.locacao import Locacao

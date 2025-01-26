@@ -13,24 +13,20 @@ class VendaBase(SQLModel):
     id: int = Field(default=None, primary_key=True)
     data: date | None = None
     valor: float
-    vendedor_id: int = Field(foreign_key="funcionario.id")
-    cliente_id: int = Field(foreign_key="cliente.id")
-    veiculo_id: int = Field(foreign_key="veiculo.id")
 
 
 class Venda(VendaBase, table=True):
+    vendedor_id: int = Field(foreign_key="funcionario.id")
+    cliente_id: int = Field(foreign_key="cliente.id")
     vendedor: "Funcionario" = Relationship(back_populates="vendas")
     cliente: "Cliente" = Relationship(back_populates="vendas")
-    veiculo: "Veiculo" = Relationship(back_populates="vendas")
+    veiculos: list["Veiculo"] = Relationship(back_populates="venda")
 
 
-class VendaComplexa(SQLModel):
-    id: int
-    data: date | None = None
-    valor: float
+class VendaComplexa(VendaBase):
     vendedor: "Funcionario"
     cliente: "Cliente"
-    veiculo: "Veiculo"
+    veiculos: list["Veiculo"]
 
 
 from .cliente import Cliente

@@ -9,6 +9,19 @@ from database.database import get_session
 router = APIRouter(prefix="/categorias", tags=["Categorias"])
 
 
+@router.post("/", response_model=Categoria)
+def create_categoria(
+    nome: str,
+    descricao: str,
+    session: Session = Depends(get_session),
+):
+    categoria = Categoria(nome=nome, desc=descricao)
+    session.add(categoria)
+    session.commit()
+    session.refresh(categoria)
+    return categoria.model_dump()
+
+
 @router.get("/", response_model=list[Categoria])
 def listar_categorias(
     offset: int = 0,
@@ -23,19 +36,6 @@ def read_categoria(categoria_id: int, session: Session = Depends(get_session)):
     categoria = session.get(Categoria, categoria_id)
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoria not found")
-    return categoria.model_dump()
-
-
-@router.post("/", response_model=Categoria)
-def create_categoria(
-    nome: str,
-    descricao: str,
-    session: Session = Depends(get_session),
-):
-    categoria = Categoria(nome=nome, desc=descricao)
-    session.add(categoria)
-    session.commit()
-    session.refresh(categoria)
     return categoria.model_dump()
 
 
