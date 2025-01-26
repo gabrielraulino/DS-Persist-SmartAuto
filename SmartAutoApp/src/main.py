@@ -6,7 +6,7 @@ Autores : Gabriel Raulino, Antonio Kleberson
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from database.database import create_db_and_tables
-from routes import categorias, funcionarios, veiculos, clientes, vendas
+from routes import categorias, funcionarios, veiculos, clientes, vendas, locacoes
 
 
 @asynccontextmanager
@@ -28,4 +28,4 @@ app.include_router(clientes.router)
 app.include_router(veiculos.router)
 app.include_router(categorias.router)
 app.include_router(vendas.router)
-# app.include_router(locacoes.router)
+app.include_router(locacoes.router)

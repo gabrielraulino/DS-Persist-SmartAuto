@@ -7,12 +7,12 @@ from http import HTTPStatus
 from sqlalchemy import text
 from sqlmodel import Session, select
 from database.database import get_session
+from sqlalchemy.orm import joinedload
 from models.cliente import Cliente
 from models.funcionario import Funcionario
 from models.veiculo import Veiculo, Ordem
 from models.venda import Venda, VendaComplexa
 from datetime import date
-from typing import List
 
 
 router = APIRouter(prefix="/vendas", tags=["Vendas"])
@@ -34,6 +34,30 @@ def listar_vendas(
     return vendas
 
 
+@router.get("/veiculos_venda/", response_model=list[Veiculo])
+def listar_veiculos(
+    offset: int = 0,
+    limit: int = Query(default=10, le=100),
+    session: Session = Depends(get_session),
+):
+    """
+    Lista veículos disponíveis para venda.\n
+    Args:\n
+        offset (int, optional): O número de registros a pular antes de começar a listar. Default é 0.
+        limit (int, optional): O número máximo de registros a retornar. Default é 10, com um máximo de 100.
+        session (Session, optional): Sessão de banco de dados a ser usada. Default é obtido através de Depends(get_session).
+    Returns:\n
+        List[Veiculo]: Uma lista de objetos Veiculo que estão disponíveis para venda.
+    """
+
+    return session.exec(
+        select(Veiculo)
+        .where(Veiculo.categorias.any(nome="Venda"), Veiculo.disponivel == True)
+        .offset(offset=offset)
+        .limit(limit)
+    ).all()
+
+
 @router.post("/", response_model=Venda, status_code=HTTPStatus.CREATED)
 def criar_venda(
     veiculo_id: int,
@@ -43,7 +67,11 @@ def criar_venda(
     session: Session = Depends(get_session),
 ):
     veiculo = session.exec(
-        select(Veiculo).where(Veiculo.id == veiculo_id and Veiculo.disponivel)
+        select(Veiculo).where(
+            Veiculo.categorias.any(nome="Venda"),
+            Veiculo.id == veiculo_id,
+            Veiculo.disponivel,
+        )
     ).one_or_none()
     if not veiculo:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
@@ -65,12 +93,12 @@ def criar_venda(
         valor=veiculo.preco,
         vendedor_id=vendedor_id,
         cliente_id=cliente_id,
-        veiculo_id=veiculo_id,
     )
-    setattr(veiculo, "disponivel", False)
     session.add(venda)
     session.commit()
     session.refresh(venda)
+    setattr(veiculo, "disponivel", False)
+    setattr(veiculo, "venda_id", venda.id)
     return venda
 
 
@@ -111,7 +139,7 @@ def remover_venda(id: int, session: Session = Depends(get_session)):
     return {"detail": "Venda apagada com sucesso"}
 
 
-@router.get("/valor_minimo/", response_model=List[Venda])
+@router.get("/valor_minimo/", response_model=list[Venda])
 def listar_vendas_por_valor_minimo(
     valor_minimo: float,
     session: Session = Depends(get_session),
@@ -127,7 +155,7 @@ def listar_vendas_por_valor_minimo(
     return vendas
 
 
-@router.get("/data/", response_model=List[Venda])
+@router.get("/data/", response_model=list[Venda])
 def listar_vendas_por_data(
     data_inicial: date,
     data_final: date,

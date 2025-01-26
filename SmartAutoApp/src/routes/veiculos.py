@@ -1,8 +1,10 @@
 # Autor: Antonio Kleberson
+from http import HTTPStatus
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
+from sqlalchemy.orm import joinedload
 from models.categoria import Categoria
-from models.veiculo import CategoriaVeiculo, Veiculo
+from models.veiculo import CategoriaVeiculo, Veiculo, VeiculoComCategorias
 from database.database import get_session
 
 router = APIRouter(prefix="/veiculos", tags=["Veiculos"])
@@ -10,7 +12,7 @@ file = "src/storage/veiculos.csv"
 campos = ["id", "marca", "modelo", "ano", "preco", "valor_diaria", "disponivel", "cor"]
 
 
-@router.post("/", response_model=Veiculo)
+@router.post("/", response_model=Veiculo, status_code=HTTPStatus.CREATED)
 def criar_veiculo(veiculo: Veiculo, session: Session = Depends(get_session)):
     session.add(veiculo)
     session.commit()
@@ -31,6 +33,37 @@ def listar_veiculos(
         ).all()
 
     return session.exec(select(Veiculo).offset(offset).limit(limit)).all()
+
+
+@router.get("/veiculo-com-categoria/", response_model=list[VeiculoComCategorias])
+def listar_com_categoria(
+    offset: int = 0,
+    limit: int = Query(default=10, le=100),
+    disponiveis: bool = True,
+    session: Session = Depends(get_session),
+):
+    if disponiveis:
+        return (
+            session.exec(
+                select(Veiculo)
+                .options(joinedload(Veiculo.categorias))
+                .where(Veiculo.disponivel)
+                .offset(offset)
+                .limit(limit)
+            )
+            .unique()
+            .all()
+        )
+    return (
+        session.exec(
+            select(Veiculo)
+            .options(joinedload(Veiculo.categorias))
+            .offset(offset)
+            .limit(limit)
+        )
+        .unique()
+        .all()
+    )
 
 
 @router.get("/{veiculo_id}", response_model=Veiculo)
@@ -81,7 +114,7 @@ def atualizar_veiculo(
     db_veiculo = session.get(Veiculo, veiculo_id)
     if not db_veiculo:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
-    for key, value in veiculo.dict(exclude_unset=True).items():
+    for key, value in veiculo.model_dump(exclude_unset=True).items():
         setattr(db_veiculo, key, value)
     session.add(db_veiculo)
     session.commit()
@@ -99,33 +132,31 @@ def remover_veiculo(veiculo_id: int, session: Session = Depends(get_session)):
     return {"ok": True}
 
 
-@router.post("/{veiculo_id}/categoria/", response_model=Categoria)
+@router.post(
+    "/categoria/{veiculo_id}", response_model=Categoria, status_code=HTTPStatus.CREATED
+)
 def categoria_para_veiculos(
     veiculo_id: int,
     nome_categoria: str,
     descricao: str = None,
     session: Session = Depends(get_session),
 ):
-    categoria_db = session.exec(
+    categoria = session.exec(
         select(Categoria).where(Categoria.nome == nome_categoria)
-    ).first()
-    if categoria_db:
-        categoria = categoria_db
-    else:
+    ).one_or_none()
+    if categoria == None:
         categoria = Categoria(nome=nome_categoria, desc=descricao)
         session.add(categoria)
         session.commit()
         session.refresh(categoria)
 
     # Verificar se a combinação de categoria_id e veiculo_id já existe
-    categoria_veiculo_existente = session.exec(
+    if session.exec(
         select(CategoriaVeiculo).where(
             CategoriaVeiculo.categoria_id == categoria.id,
             CategoriaVeiculo.veiculo_id == veiculo_id,
         )
-    ).first()
-
-    if categoria_veiculo_existente:
+    ).first():
         raise HTTPException(
             status_code=400, detail="A combinação de categoria e veículo já existe"
         )
@@ -135,4 +166,6 @@ def categoria_para_veiculos(
     )
     session.add(categoria_veiculo)
     session.commit()
-    return categoria.model_dump()
+    session.refresh(categoria_veiculo)
+    session.refresh(categoria)
+    return categoria
