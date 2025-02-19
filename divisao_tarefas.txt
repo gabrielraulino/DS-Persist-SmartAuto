@@ -1,17 +1,13 @@
 Gabriel Raulino {
-Criar classe Funcionario e seus métodos REST 
-Criar classe Cliente (junto com Endereco) e seus métodos REST
-Criar métodos REST entidade Admin 
-Criar classe venda e seus métodos REST
-Criar file_handler para salvar e carregar dados csv
+Modelo e rota Funcionario 
+Modelo e rota Locacao
+Modelo e rota Veiculo
 }
 
 Antonio Kleberson {
-Criar métodos REST entidade Gerente
-Criar classe Locacao e seus métodos REST 
-Criar classe Veiculo e seus métodos REST 
-Criar zip_handler que comprime o csv
-Criar hash_handler para gerar hash das entidades
+Modelo e rota Cliente
+Modelo e rota Venda 
+Modelo e rota Categoria
 }
 
 
