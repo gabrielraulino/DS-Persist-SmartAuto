@@ -1,4 +1,5 @@
-from odmantic import Model, Reference
+from odmantic import Model
+from models.categoria import Categoria
 
 class Veiculo(Model):
     marca: str
@@ -7,14 +8,10 @@ class Veiculo(Model):
     preco: float
     cor: str
     disponivel: bool
-    categorias: list[str] = [] 
+    categorias: list[Categoria] = [] 
 
 
-# class Veiculo(Veiculo, table=True):
-#     venda_id: int | None = Field(default=None, foreign_key="venda.id")
-#     categorias: list["Categoria"] = Relationship(link_model=CategoriaVeiculo)
-#     venda: "Venda" = Relationship(back_populates="veiculos")
-#     locacoes: list["Locacao"] = Relationship(back_populates="veiculo")
+
 
 
 

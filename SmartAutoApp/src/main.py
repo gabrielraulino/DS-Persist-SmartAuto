@@ -4,7 +4,7 @@ Autores : Gabriel Raulino, Antonio Kleberson
 
 # imports do fastAPI
 from fastapi import FastAPI
-from routes import funcionarios, veiculos
+from routes import funcionarios, veiculos, clientes, locacoes
 
 
 app = FastAPI()
@@ -16,8 +16,8 @@ def read_root():
 
 
 app.include_router(funcionarios.router)
-# app.include_router(clientes.router)
+app.include_router(clientes.router)
 app.include_router(veiculos.router)
 # app.include_router(categorias.router)
 # app.include_router(vendas.router)
-# app.include_router(locacoes.router)
+app.include_router(locacoes.router)

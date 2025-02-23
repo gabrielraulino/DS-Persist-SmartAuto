@@ -1,9 +1,4 @@
-from odmantic import Model, Field
-from typing import List, Optional, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .venda import Venda
-    from .locacao import Locacao
+from odmantic import Model
 
 class Cliente(Model):
     nome: str
@@ -13,16 +8,4 @@ class Cliente(Model):
     cidade: str
     logradouro: str
     numero: int
-    vendas: Optional[List["Venda"]] = Field(default_factory=list)
-    locacoes: Optional[List["Locacao"]] = Field(default_factory=list)
 
-    class Config:
-        collection = "clientes"
-
-
-class ClienteComVendas(Cliente):
-    vendas: Optional[List["Venda"]] = Field(default_factory=list)
-
-
-# from .venda import Venda
-# from .locacao import Locacao
