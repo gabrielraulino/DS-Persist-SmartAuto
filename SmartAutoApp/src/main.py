@@ -5,8 +5,8 @@ Autores : Gabriel Raulino, Antonio Kleberson
 # imports do fastAPI
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from database.database import create_db_and_tables
-from routes import categorias, funcionarios, veiculos, clientes, vendas, locacoes
+from src.database.mongo import create_db_and_tables
+from src.routes import categorias, funcionarios, veiculos, clientes, vendas, locacoes
 
 
 @asynccontextmanager
