@@ -5,7 +5,7 @@ __pycache__/
 .vscode
 .idea
 SmartAutoApp/src/storage/funcionarios.zip
-SmartAutoApp/ola.py
+SmartAutoApp/src/ola.py
 .env
 venv
 *.sql
