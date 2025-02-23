@@ -5,7 +5,6 @@ if TYPE_CHECKING:
     from .venda import Venda
     from .locacao import Locacao
 
-
 class Cliente(Model):
     nome: str
     telefone: str
@@ -14,15 +13,15 @@ class Cliente(Model):
     cidade: str
     logradouro: str
     numero: int
-    vendas: Optional[List["Venda"]] = []
-    locacoes: Optional[List["Locacao"]] = []
+    vendas: Optional[List["Venda"]] = Field(default_factory=list)
+    locacoes: Optional[List["Locacao"]] = Field(default_factory=list)
 
     class Config:
         collection = "clientes"
 
 
 class ClienteComVendas(Cliente):
-    vendas: Optional[List["Venda"]] = []
+    vendas: Optional[List["Venda"]] = Field(default_factory=list)
 
 
 from .venda import Venda
