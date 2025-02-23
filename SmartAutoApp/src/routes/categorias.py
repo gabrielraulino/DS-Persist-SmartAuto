@@ -1,62 +1,99 @@
-# Autor: Antonio Kleberson
 from fastapi import APIRouter, Depends, HTTPException, Query
-from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field
-from bson import ObjectId
+from odmantic import AIOEngine, ObjectId, Model
+from SmartAutoApp.src.models.categoria import Veiculo
+from database.mongo import get_engine
 from typing import List
-import os
-
-# MongoDB connection
-MONGO_DETAILS = os.getenv("MONGO_DETAILS", "mongodb://localhost:27017")
-client = AsyncIOMotorClient(MONGO_DETAILS)
-database = client.smartauto
-categoria_collection = database.get_collection("categorias")
 
 router = APIRouter(prefix="/categorias", tags=["Categorias"])
 
-class Categoria(BaseModel):
-    id: str = Field(default_factory=lambda: str(ObjectId()), alias="_id")
+# Modelo ODMantic para Categoria
+class Categoria(Model):
     nome: str
     descricao: str
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-
 @router.post("/", response_model=Categoria)
-async def create_categoria(categoria: Categoria):
-    categoria_dict = categoria.dict(by_alias=True)
-    result = await categoria_collection.insert_one(categoria_dict)
-    categoria_dict["_id"] = str(result.inserted_id)
-    return categoria_dict
+async def create_categoria(
+    categoria: Categoria,
+    engine: AIOEngine = Depends(get_engine)
+):
+    await engine.save(categoria)
+    return categoria
 
 @router.get("/", response_model=List[Categoria])
-async def listar_categorias(offset: int = 0, limit: int = Query(default=10, le=100)):
-    categorias_cursor = categoria_collection.find().skip(offset).limit(limit)
-    categorias = await categorias_cursor.to_list(length=limit)
+async def listar_categorias(
+    offset: int = 0,
+    limit: int = Query(default=10, le=100),
+    engine: AIOEngine = Depends(get_engine)
+):
+    categorias = await engine.find(Categoria, skip=offset, limit=limit)
     return categorias
 
 @router.get("/{categoria_id}", response_model=Categoria)
-async def read_categoria(categoria_id: str):
-    categoria = await categoria_collection.find_one({"_id": ObjectId(categoria_id)})
+async def read_categoria(
+    categoria_id: str,
+    engine: AIOEngine = Depends(get_engine)
+):
+    categoria = await engine.find_one(Categoria, Categoria.id == ObjectId(categoria_id))
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoria not found")
     return categoria
 
 @router.put("/{categoria_id}", response_model=Categoria)
-async def update_categoria(categoria_id: str, categoria: Categoria):
-    update_result = await categoria_collection.update_one(
-        {"_id": ObjectId(categoria_id)}, {"$set": categoria.dict(exclude_unset=True)}
-    )
-    if update_result.modified_count == 0:
+async def update_categoria(
+    categoria_id: str,
+    categoria: Categoria,
+    engine: AIOEngine = Depends(get_engine)
+):
+    db_categoria = await engine.find_one(Categoria, Categoria.id == ObjectId(categoria_id))
+    if not db_categoria:
         raise HTTPException(status_code=404, detail="Categoria not found")
-    updated_categoria = await categoria_collection.find_one({"_id": ObjectId(categoria_id)})
-    return updated_categoria
+    # Atualiza os campos desejados
+    db_categoria.nome = categoria.nome
+    db_categoria.descricao = categoria.descricao
+    await engine.save(db_categoria)
+    return db_categoria
 
 @router.delete("/{categoria_id}")
-async def delete_categoria(categoria_id: str):
-    delete_result = await categoria_collection.delete_one({"_id": ObjectId(categoria_id)})
-    if delete_result.deleted_count == 0:
+async def delete_categoria(
+    categoria_id: str,
+    engine: AIOEngine = Depends(get_engine)
+):
+    categoria = await engine.find_one(Categoria, Categoria.id == ObjectId(categoria_id))
+    if not categoria:
         raise HTTPException(status_code=404, detail="Categoria not found")
+    await engine.delete(categoria)
     return {"ok": True}
+
+@router.get("/estatisticas/veiculos", response_model=dict)
+async def estatisticas_veiculos_por_categoria(
+    categoria_id: str,
+    engine: AIOEngine = Depends(get_engine)
+):
+    pipeline = [
+        {
+            "$match": {
+                "categoria_id": ObjectId(categoria_id)
+            }
+        },
+        {
+            "$group": {
+                "_id": "$categoria_id",
+                "totalVeiculos": {"$sum": 1}
+            }
+        },
+        {
+            "$lookup": {
+                "from": "categorias",         # Nome da coleção de categorias; verifique se bate com a configuração do seu projeto
+                "localField": "_id",
+                "foreignField": "_id",
+                "as": "categoria_info"
+            }
+        },
+        {
+            "$unwind": "$categoria_info"
+        }
+    ]
+    resultados = [doc async for doc in engine.aggregate(Veiculo, pipeline)]
+    if not resultados:
+        raise HTTPException(status_code=404, detail="Nenhum veículo encontrado para a categoria informada")
+    return resultados[0]
