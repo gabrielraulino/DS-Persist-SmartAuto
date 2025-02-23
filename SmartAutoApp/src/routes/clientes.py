@@ -2,23 +2,21 @@
 Autor : Gabriel Raulino, Antonio Kleberson
 """
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from fastapi import APIRouter, HTTPException, Depends, Query
-from sqlmodel import Session, select
+from odmantic import AIOEngine
 from models.cliente import Cliente
-from database.database import get_session
+from database.mongo import get_engine
 from models.venda import Venda
 
 if TYPE_CHECKING:
     from models.venda import Venda
 
 router = APIRouter(prefix="/clientes", tags=["Clientes"])
-campos = ["id", "nome", "telefone", "email", "endereco"]
-file = "src/storage/clientes.csv"
 
 
 @router.post("/", response_model=Cliente)
-def create_cliente(
+async def create_cliente(
     nome: str,
     telefone: str,
     email: str,
@@ -26,7 +24,7 @@ def create_cliente(
     cidade: str,
     logradouro: str,
     numero: int,
-    session: Session = Depends(get_session),
+    engine: AIOEngine = Depends(get_engine),
 ):
     cliente = Cliente(
         nome=nome,
@@ -37,32 +35,31 @@ def create_cliente(
         logradouro=logradouro,
         numero=numero,
     )
-    session.add(cliente)
-    session.commit()
-    session.refresh(cliente)
+    await engine.save(cliente)
     return cliente
 
 
-@router.get("/", response_model=list[Cliente])
-def listar_clientes(
+@router.get("/", response_model=List[Cliente])
+async def listar_clientes(
     offset: int = 0,
     limit: int = Query(default=10, le=100),
-    session: Session = Depends(get_session),
+    engine: AIOEngine = Depends(get_engine),
 ):
-    return session.exec(select(Cliente).offset(offset).limit(limit)).all()
+    clientes = await engine.find(Cliente, skip=offset, limit=limit)
+    return clientes
 
 
 @router.get("/{cliente_id}", response_model=Cliente)
-def read_cliente(cliente_id: int, session: Session = Depends(get_session)):
-    cliente = session.get(Cliente, cliente_id)
+async def read_cliente(cliente_id: str, engine: AIOEngine = Depends(get_engine)):
+    cliente = await engine.find_one(Cliente, Cliente.id == cliente_id)
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente not found")
     return cliente
 
 
-@router.put("/{id}", response_model=Cliente)
-def update_cliente(
-    cliente_id: int,
+@router.put("/{cliente_id}", response_model=Cliente)
+async def update_cliente(
+    cliente_id: str,
     nome: str,
     telefone: str,
     email: str,
@@ -70,45 +67,35 @@ def update_cliente(
     cidade: str,
     logradouro: str,
     numero: int,
-    session: Session = Depends(get_session),
+    engine: AIOEngine = Depends(get_engine),
 ):
-    db_cliente = session.get(Cliente, cliente_id)
-    if not db_cliente:
-        raise HTTPException(status_code=404, detail="Cliente not found")
-    cliente = Cliente(
-        nome=nome,
-        telefone=telefone,
-        email=email,
-        uf=uf,
-        cidade=cidade,
-        logradouro=logradouro,
-        numero=numero,
-    )
-    for key, value in cliente.model_dump(exclude_unset=True).items():
-        setattr(db_cliente, key, value)
-    session.add(db_cliente)
-    session.commit()
-    session.refresh(db_cliente)
-    return db_cliente
-
-
-@router.delete("/{id}")
-def delete_cliente(cliente_id: int, session: Session = Depends(get_session)):
-    cliente = session.get(Cliente, cliente_id)
+    cliente = await engine.find_one(Cliente, Cliente.id == cliente_id)
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente not found")
-    session.delete(cliente)
-    session.commit()
+    cliente.nome = nome
+    cliente.telefone = telefone
+    cliente.email = email
+    cliente.uf = uf
+    cliente.cidade = cidade
+    cliente.logradouro = logradouro
+    cliente.numero = numero
+    await engine.save(cliente)
+    return cliente
+
+
+@router.delete("/{cliente_id}")
+async def delete_cliente(cliente_id: str, engine: AIOEngine = Depends(get_engine)):
+    cliente = await engine.find_one(Cliente, Cliente.id == cliente_id)
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente not found")
+    await engine.delete(cliente)
     return {"ok": True}
 
 
-@router.get("/{cliente_id}/vendas", response_model=list[Venda])
-def listar_vendas_cliente(cliente_id: int, session: Session = Depends(get_session)):
-    cliente = session.exec(
-        select(Cliente.id).where(Cliente.id == cliente_id)
-    ).one_or_none()
-    if cliente == None:
+@router.get("/{cliente_id}/vendas", response_model=List[Venda])
+async def listar_vendas_cliente(cliente_id: str, engine: AIOEngine = Depends(get_engine)):
+    cliente = await engine.find_one(Cliente, Cliente.id == cliente_id)
+    if not cliente:
         raise HTTPException(status_code=404, detail="Cliente not found")
-
-    vendas = session.exec(select(Venda).where(Venda.cliente_id == cliente_id)).all()
+    vendas = await engine.find(Venda, Venda.cliente_id == cliente_id)
     return vendas

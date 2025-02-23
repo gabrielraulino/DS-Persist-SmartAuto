@@ -1,12 +1,20 @@
-from typing import TYPE_CHECKING
-from sqlmodel import Relationship, SQLModel, Field
+from odmantic import Model, Field
+from typing import List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .veiculo import Veiculo
 
-
-class Categoria(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
+class Categoria(Model):
     nome: str
     desc: str
-    veiculos: list["Veiculo"] = Relationship(back_populates="categoria")
+    veiculos: Optional[List["Veiculo"]] = []
+
+    class Config:
+        collection = "categorias"
+
+class Veiculo(Model):
+    nome: str
+    categoria_id: str
+
+    class Config:
+        collection = "veiculos"
