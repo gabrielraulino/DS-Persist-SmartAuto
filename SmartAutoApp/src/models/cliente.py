@@ -1,32 +1,27 @@
-# from typing import TYPE_CHECKING
-# from sqlmodel import SQLModel, Field, Relationship
+from odmantic import Model, Field
+from typing import List, Optional, TYPE_CHECKING
 
-# if TYPE_CHECKING:
-#     from .venda import Venda
+if TYPE_CHECKING:
+    from .venda import Venda
+    from .locacao import Locacao
 
+class Cliente(Model):
+    nome: str
+    telefone: str
+    email: str
+    uf: str
+    cidade: str
+    logradouro: str
+    numero: int
+    vendas: Optional[List["Venda"]] = Field(default_factory=list)
+    locacoes: Optional[List["Locacao"]] = Field(default_factory=list)
 
-# class ClienteBase(SQLModel):
-#     """
-#     Autor : Gabriel Raulino
-#     """
-
-#     id: int | None = Field(default=None, primary_key=True)
-#     nome: str
-#     telefone: str
-#     email: str
-#     uf: str
-#     cidade: str
-#     logradouro: str
-#     numero: int
-
-
-# class Cliente(ClienteBase, table=True):
-#     vendas: list["Venda"] = Relationship(back_populates="cliente")
-#     locacoes: list["Locacao"] = Relationship(back_populates="cliente")
+    class Config:
+        collection = "clientes"
 
 
-# class ClienteComVendas(ClienteBase):
-#     vendas: list["Venda"]
+class ClienteComVendas(Cliente):
+    vendas: Optional[List["Venda"]] = Field(default_factory=list)
 
 
 # from .venda import Venda

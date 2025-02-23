@@ -1,34 +1,33 @@
-# # Autor: Gabriel Raulino
-# from typing import TYPE_CHECKING
-# from sqlmodel import SQLModel, Field, Relationship
-# from datetime import date
+from odmantic import Model, Field, Reference, ObjectId
+from datetime import date
+from typing import List, Optional
+from pydantic.networks import EmailStr
 
-# if TYPE_CHECKING:
-#     from .cliente import Cliente
-#     from .funcionario import Funcionario
-#     from .veiculo import Veiculo
+class Funcionario(Model):
+    nome: str
+    email: EmailStr
 
+class Cliente(Model):
+    nome: str
+    email: EmailStr
 
-# class VendaBase(SQLModel):
-#     id: int = Field(default=None, primary_key=True)
-#     data: date | None = None
-#     valor: float
+class Veiculo(Model):
+    modelo: str
+    marca: str
+    ano: int
 
+class VendaBase(Model):
+    data: Optional[date] = None
+    valor: float
 
-# class Venda(VendaBase, table=True):
-#     vendedor_id: int = Field(foreign_key="funcionario.id")
-#     cliente_id: int = Field(foreign_key="cliente.id")
-#     vendedor: "Funcionario" = Relationship(back_populates="vendas")
-#     cliente: "Cliente" = Relationship(back_populates="vendas")
-#     veiculos: list["Veiculo"] = Relationship(back_populates="venda")
+class Venda(VendaBase):
+    # Armazena apenas os ObjectId das referências
+    vendedor_id: ObjectId
+    cliente_id: ObjectId
+    veiculo_ids: List[ObjectId]
 
-
-# class VendaComplexa(VendaBase):
-#     vendedor: "Funcionario"
-#     cliente: "Cliente"
-#     veiculos: list["Veiculo"]
-
-
-# from .cliente import Cliente
-# from .funcionario import Funcionario
-# from .veiculo import Veiculo
+class VendaComplexa(VendaBase):
+    # Utiliza referências para armazenar os documentos completos
+    vendedor: Funcionario = Reference()
+    cliente: Cliente = Reference()
+    veiculos: List[Veiculo] = Field(default_factory=list)

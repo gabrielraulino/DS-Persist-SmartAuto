@@ -1,64 +1,99 @@
-# Autor: Antonio Kleberson
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlmodel import select
-from models.categoria import Categoria
-from database.database import get_session
-
+from odmantic import AIOEngine, ObjectId, Model
+from SmartAutoApp.src.models.categoria import Veiculo
+from database.mongo import get_engine
+from typing import List
 
 router = APIRouter(prefix="/categorias", tags=["Categorias"])
 
+# Modelo ODMantic para Categoria
+class Categoria(Model):
+    nome: str
+    descricao: str
 
 @router.post("/", response_model=Categoria)
-def create_categoria(
-    nome: str,
-    descricao: str,
-    session: Session = Depends(get_session),
+async def create_categoria(
+    categoria: Categoria,
+    engine: AIOEngine = Depends(get_engine)
 ):
-    categoria = Categoria(nome=nome, desc=descricao)
-    session.add(categoria)
-    session.commit()
-    session.refresh(categoria)
-    return categoria.model_dump()
+    await engine.save(categoria)
+    return categoria
 
-
-@router.get("/", response_model=list[Categoria])
-def listar_categorias(
+@router.get("/", response_model=List[Categoria])
+async def listar_categorias(
     offset: int = 0,
     limit: int = Query(default=10, le=100),
-    session: Session = Depends(get_session),
+    engine: AIOEngine = Depends(get_engine)
 ):
-    return session.exec(select(Categoria).offset(offset).limit(limit)).all()
-
+    categorias = await engine.find(Categoria, skip=offset, limit=limit)
+    return categorias
 
 @router.get("/{categoria_id}", response_model=Categoria)
-def read_categoria(categoria_id: int, session: Session = Depends(get_session)):
-    categoria = session.get(Categoria, categoria_id)
+async def read_categoria(
+    categoria_id: str,
+    engine: AIOEngine = Depends(get_engine)
+):
+    categoria = await engine.find_one(Categoria, Categoria.id == ObjectId(categoria_id))
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoria not found")
-    return categoria.model_dump()
-
+    return categoria
 
 @router.put("/{categoria_id}", response_model=Categoria)
-def update_categoria(
-    categoria_id: int, categoria: Categoria, session: Session = Depends(get_session)
+async def update_categoria(
+    categoria_id: str,
+    categoria: Categoria,
+    engine: AIOEngine = Depends(get_engine)
 ):
-    db_categoria = session.get(Categoria, categoria_id)
+    db_categoria = await engine.find_one(Categoria, Categoria.id == ObjectId(categoria_id))
     if not db_categoria:
         raise HTTPException(status_code=404, detail="Categoria not found")
-    for key, value in categoria.model_dump(exclude_unset=True).items():
-        setattr(db_categoria, key, value)
-    session.add(db_categoria)
-    session.commit()
-    session.refresh(db_categoria)
-    return db_categoria.model_dump()
-
+    # Atualiza os campos desejados
+    db_categoria.nome = categoria.nome
+    db_categoria.descricao = categoria.descricao
+    await engine.save(db_categoria)
+    return db_categoria
 
 @router.delete("/{categoria_id}")
-def delete_categoria(categoria_id: int, session: Session = Depends(get_session)):
-    categoria = session.get(Categoria, categoria_id)
+async def delete_categoria(
+    categoria_id: str,
+    engine: AIOEngine = Depends(get_engine)
+):
+    categoria = await engine.find_one(Categoria, Categoria.id == ObjectId(categoria_id))
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoria not found")
-    session.delete(categoria)
-    session.commit()
+    await engine.delete(categoria)
     return {"ok": True}
+
+@router.get("/estatisticas/veiculos", response_model=dict)
+async def estatisticas_veiculos_por_categoria(
+    categoria_id: str,
+    engine: AIOEngine = Depends(get_engine)
+):
+    pipeline = [
+        {
+            "$match": {
+                "categoria_id": ObjectId(categoria_id)
+            }
+        },
+        {
+            "$group": {
+                "_id": "$categoria_id",
+                "totalVeiculos": {"$sum": 1}
+            }
+        },
+        {
+            "$lookup": {
+                "from": "categorias",         # Nome da coleção de categorias; verifique se bate com a configuração do seu projeto
+                "localField": "_id",
+                "foreignField": "_id",
+                "as": "categoria_info"
+            }
+        },
+        {
+            "$unwind": "$categoria_info"
+        }
+    ]
+    resultados = [doc async for doc in engine.aggregate(Veiculo, pipeline)]
+    if not resultados:
+        raise HTTPException(status_code=404, detail="Nenhum veículo encontrado para a categoria informada")
+    return resultados[0]
