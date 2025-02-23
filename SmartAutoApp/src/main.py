@@ -4,18 +4,10 @@ Autores : Gabriel Raulino, Antonio Kleberson
 
 # imports do fastAPI
 from fastapi import FastAPI
-from contextlib import asynccontextmanager
-from src.database.mongo import create_db_and_tables
-from src.routes import categorias, funcionarios, veiculos, clientes, vendas, locacoes
+from routes import funcionarios, veiculos, clientes, locacoes
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    create_db_and_tables()
-    yield
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 
 @app.get("/")
@@ -26,6 +18,6 @@ def read_root():
 app.include_router(funcionarios.router)
 app.include_router(clientes.router)
 app.include_router(veiculos.router)
-app.include_router(categorias.router)
-app.include_router(vendas.router)
+# app.include_router(categorias.router)
+# app.include_router(vendas.router)
 app.include_router(locacoes.router)

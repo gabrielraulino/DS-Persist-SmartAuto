@@ -1,101 +1,64 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from http import HTTPStatus
-from models.funcionario import FuncionarioBase, Role
-from fastapi import APIRouter, HTTPException, Depends, Query
-from sqlmodel import Session, select
-from sqlalchemy.orm import joinedload
-from models.funcionario import FuncionarioBase, Funcionario
-from database.database import get_session
+from models.funcionario import Funcionario, Role
+from database.mongo import get_engine
+from odmantic import ObjectId
 
 router = APIRouter(prefix="/funcionarios", tags=["Funcionarios"])
 file = "src/storage/funcionarios.csv"
 # campos = ["id", "usuario", "senha", "nome", "telefone", "funcao"]
 
-
+engine = get_engine()
 @router.post("/", response_model=Funcionario)
-def create(
-    nome: str,
-    usuario: str,
-    senha: str,
-    telefone: str,
-    funcao: Role,
-    session: Session = Depends(get_session),
-):
-    funcionario = Funcionario(
-        usuario=usuario, senha=senha, nome=nome, telefone=telefone, funcao=funcao
-    )
-    session.add(funcionario)
-    session.commit()
-    session.refresh(funcionario)
-    return funcionario.model_dump()
+async def create(
+    funcionario : Funcionario
+) -> Funcionario:
+    await engine.save(funcionario)
+    return funcionario
 
 
 @router.get("/", response_model=list[Funcionario])
-def listar(
+async def listar(
     offset: int = 0,
     limit: int = Query(default=10, le=100),
-    session: Session = Depends(get_session),
 ):
-    return session.exec(select(Funcionario).offset(offset).limit(limit)).all()
-
+    funcionarios = await engine.find(Funcionario, skip=offset, limit=limit)
+    return funcionarios
 
 @router.get("/{id}", response_model=list[Funcionario])
-def read(user_id: int, session: Session = Depends(get_session)):
-    funcionario = session.get(Funcionario, user_id)
+async def read(_id: ObjectId):
+    funcionario = await engine.find_one(Funcionario, funcionario.id == _id)
     if not funcionario:
-        raise HTTPException(status_code=404, detail="Funcionario not found")
-    return funcionario.model_dump()
+        raise HTTPException(status_code=404, detail= "Funcionario not found")
+    return funcionario
 
 
 @router.get("/{nome}", response_model=list[Funcionario])
-def search_by_name(nome: str, session: Session = Depends(get_session)):
-    funcionarios = session.exec(
-        select(Funcionario).where(Funcionario.nome.like(f"%{nome}%"))
-    ).all()
-    if not funcionarios:
-        raise HTTPException(status_code=404, detail="Funcionario not found")
+async def search_by_name(nome: str):
+    funcionarios = await engine.find(Funcionario, Funcionario.nome == nome)
     return funcionarios
-
 
 @router.get("/role/{funcao}", response_model=list[Funcionario])
-def search_by_role(funcao: Role, session: Session = Depends(get_session)):
-    funcionarios = session.exec(
-        select(Funcionario).where(Funcionario.funcao == funcao)
-    ).all()
-    if not funcionarios:
-        raise HTTPException(status_code=404, detail="Funcionario not found")
-    return funcionarios
-
+async def search_by_role(funcao: Role):
+    pass
 
 @router.put("/{id}", response_model=Funcionario)
-def update(
-    funcionario_id: int,
-    nome: str,
-    usuario: str,
-    senha: str,
-    telefone: str,
-    funcao: Role,
-    session: Session = Depends(get_session),
+async def update(
+    _id: ObjectId, funcionario: dict
 ):
-    db_funcionario = session.get(Funcionario, funcionario_id)
-    if not db_funcionario:
+    user = await engine.find_one(Funcionario, Funcionario.id == _id)
+    if not user:
         raise HTTPException(status_code=404, detail="Funcionario not found")
-    funcionario = Funcionario(
-        usuario=usuario, senha=senha, nome=nome, telefone=telefone, funcao=funcao
-    )
-    for key, value in funcionario.model_dump(exclude_unset=True).items():
-        setattr(db_funcionario, key, value)
-    session.add(db_funcionario)
-    session.commit()
-    session.refresh(db_funcionario)
-    return db_funcionario.model_dump()
+    for key, value in funcionario.items():
+        setattr(user, key, value)
+    await engine.save(user)
+    return user.model_dump()
 
 
 @router.delete("/{id}")
-def delete(funcionario_id: int, session: Session = Depends(get_session)):
-    func = session.get(Funcionario, funcionario_id)
-    if not func:
+async def delete(funcionario_id: ObjectId):
+    user = await engine.find_one(Funcionario, Funcionario.id == funcionario_id)
+    if not user:
         raise HTTPException(status_code=404, detail="Funcionario not found")
-    session.delete(func)
-    session.commit()
-    return {"ok": True}
+    await engine.delete(user)
+    return {"message": "User deleted"}
