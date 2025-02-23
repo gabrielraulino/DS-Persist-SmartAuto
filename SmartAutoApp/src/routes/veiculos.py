@@ -41,14 +41,13 @@ async def buscar_veiculo(_id: ObjectId) -> Veiculo:
 
 @router.get("/categoria/{categoria}", response_model=list[Veiculo])
 async def listar_veiculos_por_categoria(categoria: str):
-    # return await engine.find(Veiculo, Veiculo.categorias.contains(categoria))
     c = await engine.find_one(Categoria, Categoria.nome == categoria)
     if not c:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail="Categoria " + categoria + " não existe",
         )
-    return await engine.find(Veiculo, {"categorias.nome": "Sedan"})
+    return await engine.find(Veiculo, {"categorias.nome": categoria})
 
 
 @router.get("/preco/", response_model=list[Veiculo])
