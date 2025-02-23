@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from odmantic import AIOEngine, ObjectId
 from database.mongo import get_engine  # Função que retorna o AIOEngine configurado
-from datetime import date
+from datetime import datetime
 from typing import List
 from models.venda import Venda
 from models.veiculo import Veiculo
@@ -17,7 +17,8 @@ async def listar_vendas(
     engine: AIOEngine = Depends(get_engine)
 ):
     ordem_value = -1 if ordem.upper() == "DESC" else 1
-    vendas = await engine.find(Venda, skip=offset, limit=limit, sort=[("valor", ordem_value)])
+    # vendas = await engine.find(Venda, skip=offset, limit=limit, sort=[("valor", ordem_value)])
+    vendas = await engine.find(Venda, skip=offset, limit=limit)
     return vendas
 
 @router.get("/veiculos_venda/", response_model=List[Veiculo])
@@ -27,7 +28,7 @@ async def listar_veiculos(
     engine: AIOEngine = Depends(get_engine)
 ):
     # Em MongoDB, consultar um campo array com valor "Venda" retorna documentos onde o array contém esse valor.
-    veiculos = await engine.find(Veiculo, (Veiculo.categorias == "Venda") & (Veiculo.disponivel == True), skip=offset, limit=limit)
+    veiculos = await engine.find(Veiculo, (Veiculo.disponivel == True), skip=offset, limit=limit)
     return veiculos
 
 @router.post("/", response_model=Venda, status_code=201)
@@ -35,13 +36,13 @@ async def criar_venda(
     vendedor_id: str,
     cliente_id: str,
     veiculo_id: str,
-    data: date = date.today(),
+    data: datetime = datetime.today(),
     engine: AIOEngine = Depends(get_engine)
 ):
     # Converter as strings para ObjectId e buscar o veículo disponível com a categoria "Venda"
     veiculo_obj = await engine.find_one(
         Veiculo,
-        (Veiculo.id == ObjectId(veiculo_id)) & (Veiculo.categorias == "Venda") & (Veiculo.disponivel == True)
+        (Veiculo.id == ObjectId(veiculo_id) and Veiculo.disponivel == True)
     )
     if not veiculo_obj:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
@@ -57,15 +58,14 @@ async def criar_venda(
     nova_venda = Venda(
         data=data,
         valor=veiculo_obj.preco,
-        vendedor_id=ObjectId(vendedor_id),
-        cliente_id=ObjectId(cliente_id),
-        veiculo_id=ObjectId(veiculo_id)
+        vendedor=vendedor_obj,
+        cliente= cliente_obj,
+        veiculo= veiculo_obj
     )
     await engine.save(nova_venda)
     
     # Atualiza o veículo: marca como indisponível e associa a venda recém-criada
     veiculo_obj.disponivel = False
-    veiculo_obj.venda_id = nova_venda.id
     await engine.save(veiculo_obj)
     
     return nova_venda
@@ -96,6 +96,9 @@ async def remover_venda(id: str, engine: AIOEngine = Depends(get_engine)):
     venda = await engine.find_one(Venda, Venda.id == ObjectId(id))
     if not venda:
         raise HTTPException(status_code=404, detail="Venda não encontrada.")
+    veiculo = await engine.find_one(Veiculo, Veiculo.id == ObjectId(venda.veiculo.id))
+    veiculo.disponivel = True
+    await engine.save(veiculo)
     await engine.delete(venda)
     return {"detail": "Venda apagada com sucesso"}
 
@@ -107,7 +110,7 @@ async def listar_vendas_por_valor_minimo(valor_minimo: float, engine: AIOEngine 
     return vendas
 
 @router.get("/data/", response_model=List[Venda])
-async def listar_vendas_por_data(data_inicial: date, data_final: date, engine: AIOEngine = Depends(get_engine)):
+async def listar_vendas_por_data(data_inicial: datetime, data_final: datetime, engine: AIOEngine = Depends(get_engine)):
     vendas = await engine.find(Venda, (Venda.data >= data_inicial) & (Venda.data <= data_final), limit=100)
     if not vendas:
         raise HTTPException(status_code=404, detail="Nenhuma venda encontrada no período especificado")
