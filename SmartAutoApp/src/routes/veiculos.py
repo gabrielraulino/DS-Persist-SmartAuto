@@ -1,171 +1,145 @@
 # Autor: Antonio Kleberson
 from http import HTTPStatus
-from fastapi import APIRouter, HTTPException, Depends, Query
-from sqlmodel import Session, select
-from sqlalchemy.orm import joinedload
-from models.categoria import Categoria
-from models.veiculo import CategoriaVeiculo, Veiculo, VeiculoComCategorias
-from database.database import get_session
-
+from fastapi import APIRouter, HTTPException, Query
+from models.veiculo import Veiculo
+from database.mongo import get_engine
+from odmantic import ObjectId
 router = APIRouter(prefix="/veiculos", tags=["Veiculos"])
-file = "src/storage/veiculos.csv"
-campos = ["id", "marca", "modelo", "ano", "preco", "valor_diaria", "disponivel", "cor"]
-
+# file = "src/storage/veiculos.csv"
+# campos = ["id", "marca", "modelo", "ano", "preco", "valor_diaria", "disponivel", "cor"]
+engine = get_engine()
 
 @router.post("/", response_model=Veiculo, status_code=HTTPStatus.CREATED)
-def criar_veiculo(veiculo: Veiculo, session: Session = Depends(get_session)):
-    session.add(veiculo)
-    session.commit()
-    session.refresh(veiculo)
+async def criar_veiculo(veiculo: Veiculo):
+    await engine.save(veiculo)
     return veiculo
 
 
 @router.get("/", response_model=list[Veiculo])
-def listar_veiculos(
-    offset: int = 0,
+async def listar_veiculos(
+    skip: int = 0,
     limit: int = Query(default=10, le=100),
-    session: Session = Depends(get_session),
     disponiveis: bool = True,
 ):
     if disponiveis:
-        return session.exec(
-            select(Veiculo).where(Veiculo.disponivel).offset(offset).limit(limit)
-        ).all()
+        return await engine.find(Veiculo, Veiculo.disponivel == True, skip=skip, limit=limit)
 
-    return session.exec(select(Veiculo).offset(offset).limit(limit)).all()
+    return await engine.find(Veiculo, skip=skip, limit=limit)
 
 
-@router.get("/veiculo-com-categoria/", response_model=list[VeiculoComCategorias])
-def listar_com_categoria(
-    offset: int = 0,
-    limit: int = Query(default=10, le=100),
-    disponiveis: bool = True,
-    session: Session = Depends(get_session),
-):
-    if disponiveis:
-        return (
-            session.exec(
-                select(Veiculo)
-                .options(joinedload(Veiculo.categorias))
-                .where(Veiculo.disponivel)
-                .offset(offset)
-                .limit(limit)
-            )
-            .unique()
-            .all()
-        )
-    return (
-        session.exec(
-            select(Veiculo)
-            .options(joinedload(Veiculo.categorias))
-            .offset(offset)
-            .limit(limit)
-        )
-        .unique()
-        .all()
-    )
+# @router.get("/veiculo-com-categoria/", response_model=list[Veiculo])
+# async def listar_com_categoria(
+#     offset: int = 0,
+#     limit: int = Query(default=10, le=100),
+#     disponiveis: bool = True,
+# ):
+#     if disponiveis:
+        
+#     return (
+#         session.exec(
+#             select(Veiculo)
+#             .options(joinedload(Veiculo.categorias))
+#             .offset(offset)
+#             .limit(limit)
+#         )
+#         .unique()
+#         .all()
+#     )
 
 
 @router.get("/{veiculo_id}", response_model=Veiculo)
-def buscar_veiculo(veiculo_id: int, session: Session = Depends(get_session)):
-    veiculo = session.get(Veiculo, veiculo_id)
+async def buscar_veiculo(_id: ObjectId):
+    veiculo = engine.find_one(Veiculo,Veiculo.id == _id )
     if not veiculo:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
     return veiculo
 
 
 @router.get("/categoria/{categoria}", response_model=list[Veiculo])
-def listar_veiculos_por_categoria(
-    categoria: str, session: Session = Depends(get_session)
+async def listar_veiculos_por_categoria(
+    categoria: str
 ):
-    return session.exec(
-        select(Veiculo)
-        .join(CategoriaVeiculo)
-        .join(Categoria)
-        .where(Categoria.nome == categoria)
-    ).all()
-
-
+    # return await engine.find(Veiculo, Veiculo.categorias.contains(categoria))
+    v = await engine.find(Veiculo, Veiculo.categorias.contains(categoria))
+    return v
 @router.get("/preco/", response_model=list[Veiculo])
-def listar_veiculos_por_preco(
+async def listar_veiculos_por_preco(
     min_preco: float = 0,
     max_preco: float = Query(default=1000000),
-    session: Session = Depends(get_session),
 ):
-    return session.exec(
-        select(Veiculo).where(Veiculo.preco.between(min_preco, max_preco))
-    ).all()
+    return await engine.find(
+      Veiculo,
+      Veiculo.preco >= min_preco,
+      Veiculo.preco <= max_preco,
+      Veiculo.disponivel == True
+    )
 
 
 @router.get("/ano/{ano}", response_model=list[Veiculo])
-def listar_veiculos_por_ano(ano: int, session: Session = Depends(get_session)):
-    return session.exec(select(Veiculo).where(Veiculo.ano == ano)).all()
+async def listar_veiculos_por_ano(ano: int):
+    return await engine.find(Veiculo, Veiculo.ano == ano)
 
 
 @router.get("/modelo/{modelo}", response_model=list[Veiculo])
-def listar_veiculos_por_modelo(modelo: str, session: Session = Depends(get_session)):
-    return session.exec(select(Veiculo).where(Veiculo.modelo == modelo)).all()
+async def listar_veiculos_por_modelo(modelo: str):
+    return await engine.find(Veiculo, Veiculo.modelo == modelo)
 
 
 @router.put("/{veiculo_id}", response_model=Veiculo)
-def atualizar_veiculo(
-    veiculo_id: int, veiculo: Veiculo, session: Session = Depends(get_session)
+async def atualizar_veiculo(
+    veiculo_id: ObjectId, veiculo: Veiculo
 ):
-    db_veiculo = session.get(Veiculo, veiculo_id)
+    db_veiculo = await engine.find_one(Veiculo, Veiculo.id == veiculo_id)
     if not db_veiculo:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
     for key, value in veiculo.model_dump(exclude_unset=True).items():
         setattr(db_veiculo, key, value)
-    session.add(db_veiculo)
-    session.commit()
-    session.refresh(db_veiculo)
+    await engine.save(veiculo)
     return db_veiculo
 
 
 @router.delete("/{veiculo_id}")
-def remover_veiculo(veiculo_id: int, session: Session = Depends(get_session)):
-    veiculo = session.get(Veiculo, veiculo_id)
+async def remover_veiculo(veiculo_id: ObjectId):
+    veiculo = await engine.find(Veiculo, Veiculo.id == veiculo_id)
     if not veiculo:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
-    session.delete(veiculo)
-    session.commit()
+    engine.delete(veiculo)
     return {"ok": True}
 
 
-@router.post(
-    "/categoria/{veiculo_id}", response_model=Categoria, status_code=HTTPStatus.CREATED
-)
-def categoria_para_veiculos(
-    veiculo_id: int,
-    nome_categoria: str,
-    descricao: str = None,
-    session: Session = Depends(get_session),
-):
-    categoria = session.exec(
-        select(Categoria).where(Categoria.nome == nome_categoria)
-    ).one_or_none()
-    if categoria == None:
-        categoria = Categoria(nome=nome_categoria, desc=descricao)
-        session.add(categoria)
-        session.commit()
-        session.refresh(categoria)
+# @router.post(
+#     "/categoria/{veiculo_id}", response_model=Veiculo, status_code=HTTPStatus.CREATED
+# )
+# async def categoria_para_veiculos(
+#     veiculo_id: int,
+#     nome_categoria: str,
+#     descricao: str = None,
+# ):
+#     categoria = session.exec(
+#         select(Categoria).where(Categoria.nome == nome_categoria)
+#     ).one_or_none()
+#     if categoria == None:
+#         categoria = Categoria(nome=nome_categoria, desc=descricao)
+#         session.add(categoria)
+#         session.commit()
+#         session.refresh(categoria)
 
-    # Verificar se a combinação de categoria_id e veiculo_id já existe
-    if session.exec(
-        select(CategoriaVeiculo).where(
-            CategoriaVeiculo.categoria_id == categoria.id,
-            CategoriaVeiculo.veiculo_id == veiculo_id,
-        )
-    ).first():
-        raise HTTPException(
-            status_code=400, detail="A combinação de categoria e veículo já existe"
-        )
+#     # Verificar se a combinação de categoria_id e veiculo_id já existe
+#     if session.exec(
+#         select(CategoriaVeiculo).where(
+#             CategoriaVeiculo.categoria_id == categoria.id,
+#             CategoriaVeiculo.veiculo_id == veiculo_id,
+#         )
+#     ).first():
+#         raise HTTPException(
+#             status_code=400, detail="A combinação de categoria e veículo já existe"
+#         )
 
-    categoria_veiculo = CategoriaVeiculo(
-        veiculo_id=veiculo_id, categoria_id=categoria.id
-    )
-    session.add(categoria_veiculo)
-    session.commit()
-    session.refresh(categoria_veiculo)
-    session.refresh(categoria)
-    return categoria
+#     categoria_veiculo = CategoriaVeiculo(
+#         veiculo_id=veiculo_id, categoria_id=categoria.id
+#     )
+#     session.add(categoria_veiculo)
+#     session.commit()
+#     session.refresh(categoria_veiculo)
+#     session.refresh(categoria)
+#     return categoria
