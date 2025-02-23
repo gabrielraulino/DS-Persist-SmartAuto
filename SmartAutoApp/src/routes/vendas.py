@@ -1,32 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
-from odmantic import AIOEngine, ObjectId, Model
+from odmantic import AIOEngine, ObjectId
 from database.mongo import get_engine  # Função que retorna o AIOEngine configurado
 from datetime import date
-from typing import List, Optional
-
+from typing import List
+from models.venda import Venda
+from models.veiculo import Veiculo
+from models.cliente import Cliente
+from models.funcionario import Funcionario
 router = APIRouter(prefix="/vendas", tags=["Vendas"])
-
-# Modelos ODMantic
-class Venda(Model):
-    data: date
-    valor: float
-    vendedor_id: ObjectId
-    cliente_id: ObjectId
-    veiculo_id: ObjectId
-
-class Veiculo(Model):
-    categorias: List[str]
-    disponivel: bool
-    preco: float
-    venda_id: Optional[ObjectId] = None
-
-class Cliente(Model):
-    # Defina os campos necessários para o Cliente
-    nome: str
-
-class Funcionario(Model):
-    # Defina os campos necessários para o Funcionário
-    nome: str
 
 @router.get("/", response_model=List[Venda])
 async def listar_vendas(
