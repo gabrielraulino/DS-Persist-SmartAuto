@@ -32,8 +32,8 @@ async def listar_veiculos(
 
 
 @router.get("/{veiculo_id}", response_model=Veiculo)
-async def buscar_veiculo(_id: ObjectId) -> Veiculo:
-    veiculo = engine.find_one(Veiculo, Veiculo.id == _id)
+async def buscar_veiculo(_id: ObjectId):
+    veiculo = await engine.find_one(Veiculo, Veiculo.id == _id)
     if not veiculo:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
     return veiculo
