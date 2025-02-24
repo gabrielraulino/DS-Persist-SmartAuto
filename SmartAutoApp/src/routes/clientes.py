@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TYPE_CHECKING, List
 from fastapi import APIRouter, HTTPException, Depends, Query
 from odmantic import AIOEngine, ObjectId
@@ -95,44 +96,5 @@ async def listar_vendas_cliente(cliente_id: str, engine: AIOEngine = Depends(get
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente not found")
     # Converter também para ObjectId, se o campo cliente_id em Venda for armazenado como ObjectId
-    vendas = await engine.find(Venda, Venda.cliente_id == ObjectId(cliente_id))
+    vendas = await engine.find(Venda, Venda.cliente == ObjectId(cliente_id))
     return vendas
-
-
-@router.get("/vendas/periodo", response_model=List[dict])
-async def clientes_vendas_periodo(
-    start_date: str,  # Formato esperado: ISO (ex.: "2023-01-01T00:00:00")
-    end_date: str,    # Formato esperado: ISO (ex.: "2023-01-31T23:59:59")
-    engine: AIOEngine = Depends(get_engine)
-):
-    pipeline = [
-        {
-            "$match": {
-                "data": {"$gte": start_date, "$lte": end_date}
-            }
-        },
-        {
-            "$group": {
-                "_id": "$cliente_id",
-                "totalVendas": {"$sum": "$valor"},
-                "numVendas": {"$sum": 1},
-                "mediaVendas": {"$avg": "$valor"}
-            }
-        },
-        {
-            "$lookup": {
-                "from": "cliente",             # Nome da coleção de clientes; verifique se corresponde à sua configuração
-                "localField": "_id",
-                "foreignField": "_id",
-                "as": "cliente_info"
-            }
-        },
-        {
-            "$unwind": "$cliente_info"
-        }
-    ]
-    stats_cursor = engine.aggregate(Venda, pipeline)
-    resultados = [doc async for doc in stats_cursor]
-    if not resultados:
-        raise HTTPException(status_code=404, detail="Nenhum cliente com vendas no período especificado")
-    return resultados

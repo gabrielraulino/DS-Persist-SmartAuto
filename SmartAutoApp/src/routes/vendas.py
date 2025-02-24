@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
+from http import HTTPStatus
 from odmantic import AIOEngine, ObjectId
 from database.mongo import get_engine  # Função que retorna o AIOEngine configurado
 from datetime import datetime
@@ -8,7 +9,7 @@ from models.veiculo import Veiculo
 from models.cliente import Cliente
 from models.funcionario import Funcionario
 router = APIRouter(prefix="/vendas", tags=["Vendas"])
-
+engine = get_engine()
 @router.get("/", response_model=List[Venda])
 async def listar_vendas(
     offset: int = 0,
@@ -35,17 +36,17 @@ async def listar_veiculos(
 async def criar_venda(
     vendedor_id: str,
     cliente_id: str,
-    veiculo_id: str,
+    veiculo_id: ObjectId,
     data: datetime = datetime.today(),
-    engine: AIOEngine = Depends(get_engine)
 ):
-    # Converter as strings para ObjectId e buscar o veículo disponível com a categoria "Venda"
     veiculo_obj = await engine.find_one(
         Veiculo,
-        (Veiculo.id == ObjectId(veiculo_id) and Veiculo.disponivel == True)
+        (Veiculo.id == veiculo_id)
     )
     if not veiculo_obj:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    if not veiculo_obj.disponivel:
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Veiculo não disponível")
     
     vendedor_obj = await engine.find_one(Funcionario, Funcionario.id == ObjectId(vendedor_id))
     if not vendedor_obj:
@@ -110,72 +111,29 @@ async def listar_vendas_por_valor_minimo(valor_minimo: float, engine: AIOEngine 
     return vendas
 
 @router.get("/data/", response_model=List[Venda])
-async def listar_vendas_por_data(data_inicial: datetime, data_final: datetime, engine: AIOEngine = Depends(get_engine)):
+async def listar_vendas_por_data(
+    data_inicial: datetime = datetime.today(),
+    data_final: datetime = datetime.today(), 
+    engine: AIOEngine = Depends(get_engine)
+):
     vendas = await engine.find(Venda, (Venda.data >= data_inicial) & (Venda.data <= data_final), limit=100)
     if not vendas:
         raise HTTPException(status_code=404, detail="Nenhuma venda encontrada no período especificado")
     return vendas
 
-
-@router.get("/estatisticas/mes", response_model=List[dict])
-async def estatisticas_vendas_por_mes(
-    engine: AIOEngine = Depends(get_engine)
-):
+@router.get("/soma_vendas/")
+async def soma_vendas():
     pipeline = [
-        {
-            "$group": {
-                "_id": { "$dateToString": {"format": "%Y-%m", "date": "$data"} },
-                "totalVendas": {"$sum": "$valor"},
-                "numVendas": {"$sum": 1},
-                "mediaVendas": {"$avg": "$valor"}
-            }
-        },
-        {"$sort": {"_id": 1}}
-    ]
-    resultados = [doc async for doc in engine.aggregate(Venda, pipeline)]
-    return resultados
-
-
-@router.get("/estatisticas/vendedor", response_model=List[dict])
-async def estatisticas_vendas_por_vendedor(
-    engine: AIOEngine = Depends(get_engine)
-):
-    pipeline = [
-        {
-            "$group": {
-                "_id": "$vendedor_id",
-                "totalVendas": {"$sum": "$valor"},
-                "numVendas": {"$sum": 1},
-                "mediaVendas": {"$avg": "$valor"}
+        
+    {
+        '$group': {
+            '_id': None, 
+            'totalValor': {
+                '$sum': '$valor'
             }
         }
-    ]
-    resultados = [doc async for doc in engine.aggregate(Venda, pipeline)]
-    return resultados
+    }
 
-
-@router.get("/estatisticas/categoria", response_model=List[dict])
-async def estatisticas_vendas_por_categoria(engine: AIOEngine = Depends(get_engine)):
-    pipeline = [
-        {
-            "$lookup": {
-                "from": "veiculos",              # Nome da coleção de veículos
-                "localField": "veiculo_id",       # Campo em Venda que referencia o veículo
-                "foreignField": "_id",            # Campo no Veiculo para a junção
-                "as": "veiculo_info"
-            }
-        },
-        {"$unwind": "$veiculo_info"},           # Desconstrói o array resultante do lookup
-        {"$unwind": "$veiculo_info.categorias"},  # Se o veículo tiver múltiplas categorias, separa cada uma
-        {
-            "$group": {
-                "_id": "$veiculo_info.categorias",  # Agrupa por cada categoria
-                "totalVendas": {"$sum": "$valor"},
-                "numVendas": {"$sum": 1},
-                "mediaVendas": {"$avg": "$valor"}
-            }
-        },
-        {"$sort": {"totalVendas": -1}}  # Ordena do maior total vendido para o menor
     ]
-    resultados = [doc async for doc in engine.aggregate(Venda, pipeline)]
-    return resultados
+    result = await engine.database.get_collection("venda").aggregate(pipeline).to_list()
+    return {"Valor total em vendas":result[0]['totalValor']}
