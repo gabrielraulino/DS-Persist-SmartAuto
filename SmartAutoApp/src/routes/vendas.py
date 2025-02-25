@@ -8,8 +8,12 @@ from models.venda import Venda
 from models.veiculo import Veiculo
 from models.cliente import Cliente
 from models.funcionario import Funcionario
+
+
 router = APIRouter(prefix="/vendas", tags=["Vendas"])
 engine = get_engine()
+
+
 @router.get("/", response_model=List[Venda])
 async def listar_vendas(
     offset: int = 0,
